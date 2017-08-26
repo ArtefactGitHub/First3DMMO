@@ -80,13 +80,13 @@ namespace com.Artefact.FrameworkNetwork.Samples
 
 		void Update()
 		{
-			if(Input.GetKeyUp("a"))
-			{
-				Module.Register("test", (res) =>
-				{
-					Debug.Log("end");
-				});
-			}
+			//if(Input.GetKeyUp("a"))
+			//{
+			//	Module.Register("test", (res) =>
+			//	{
+			//		Debug.Log("end");
+			//	});
+			//}
 		}
 	}
 }
