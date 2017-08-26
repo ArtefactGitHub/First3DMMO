@@ -139,6 +139,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 			string message = string.Format("WebSocket Close\n Code : [{0}]\n Reason : [{1}]", args.Code, args.Reason);
 			Debug.Log(message);
 
+			// http://tools.ietf.org/html/rfc6455#section-7.4
 			if((CloseStatusCode)args.Code != CloseStatusCode.Normal && (CloseStatusCode)args.Code != CloseStatusCode.NoStatus)
 			{
 				// 未接続の場合、接続時エラーをセットする
