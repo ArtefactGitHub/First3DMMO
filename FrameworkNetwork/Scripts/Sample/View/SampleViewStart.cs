@@ -15,6 +15,9 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		[SerializeField]
 		private Button _ButtonRun = null;
 
+		[SerializeField]
+		private Text _TextStatusValue = null;
+
 		public override void Finalizer()
 		{
 			gameObject.SetActive(false);
@@ -36,12 +39,20 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 
 		private void Setup()
 		{
-			_ProcessEndAsObservable.OnNext(null);
-			//Observable.FromCoroutine<Exception>(observer => SampleNetworkManager.Instance.Initialize(observer, SampleDefine.EndPoint))
-			//	.Subscribe(ex =>
-			//	{
-			//		_ProcessEndAsObservable.OnNext(ex);
-			//	}).AddTo(this);
+			_TextStatusValue.text = "接続中";
+			_ButtonRun.interactable = false;
+
+			Observable.FromCoroutine<Exception>(observer => SampleNetworkManager.Instance.Initialize(observer, SampleDefine.EndPoint))
+				.Subscribe(ex =>
+				{
+					// エラーの場合、エラーメッセージを表示する
+					if(ex != null)
+					{
+						_TextStatusValue.text = string.Format("<color=red>{0}</color>", ex.Message);
+					}
+
+					_ProcessEndAsObservable.OnNext(ex);
+				}).AddTo(this);
 		}
 	}
 }
