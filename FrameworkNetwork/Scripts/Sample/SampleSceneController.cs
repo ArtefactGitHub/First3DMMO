@@ -11,8 +11,6 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		[SerializeField]
 		private List<AView> _Views = new List<AView>();
 
-		private SampleModule Module = new SampleModule();
-
 		private void Start()
 		{
 			Observable.FromCoroutine(() => Run()).Subscribe().AddTo(this);
