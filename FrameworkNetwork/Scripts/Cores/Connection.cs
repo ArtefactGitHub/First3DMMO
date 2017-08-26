@@ -1,18 +1,33 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using WebSocketSharp;
-using UniRx;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using UniRx;
+using UnityEngine;
+using WebSocketSharp;
 
 namespace com.Artefact.FrameworkNetwork.Cores
 {
 	public interface IConnection
 	{
+		/// <summary>
+		/// 初期化処理
+		/// 
+		/// 接続先やメッセージイベントの Action を登録した
+		/// パラメータークラスを引数として渡してください。
+		/// </summary>
+		/// <param name="param"></param>
+		/// <returns></returns>
 		IObservable<Exception> Initialize(ConnectionParameter param);
 
-		void Send(JObject obj);
+		/// <summary>
+		/// ユーザーコマンドの送信
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <param name="commandName"></param>
+		/// <param name="callback"></param>
+		void Send(JObject obj, string commandName, Action<Exception, JObject> callback);
 	}
 
 	public class Connection : MonoBehaviour, IConnection
@@ -35,21 +50,41 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 		private WebSocket m_Socket = null;
 
+		/// <summary> 接続パラメータ </summary>
+		private ConnectionParameter _ConnectionParam = null;
+
+		/// <summary> 接続されたか </summary>
+		private bool _IsConnected { get; set; }
+
+		/// <summary> 接続時エラー </summary>
+		private Exception ConnectionError { get; set; }
+
+		/// <summary>
+		/// ユーザーコマンドのコールバックリスト 
+		/// 
+		/// コマンド名を key とし、コマンド結果受信時に対応したコールバックを実行します。
+		/// </summary>
+		private Dictionary<string, Action<Exception, JObject>> _CommandCallbacks = new Dictionary<string, Action<Exception, JObject>>();
+
+		/// <summary>
+		/// OnMessage で受け取ったメッセージデータ 
+		/// 
+		/// MainThread で処理する必要があるため、一度キャッシュしておき、
+		/// Update() 内で処理します。
+		/// </summary>
+		private List<MessageEventArgs> _MessageQueues = new List<MessageEventArgs>();
+
+		#region Initialize
+
 		public IObservable<Exception> Initialize(ConnectionParameter param)
 		{
-			return Observable.FromCoroutine<Exception>(observer => ConnectRoutine(observer, param)).SelectMany(ex =>
+			return Observable.FromCoroutine<Exception>(observer => ConnectProcess(observer, param)).SelectMany(ex =>
 			{
 				return Observable.Return(ex);
 			});
 		}
 
-		private ConnectionParameter _Param = null;
-
-		private bool _IsConnected { get; set; }
-
-		private Exception ConnectionError { get; set; }
-
-		public IEnumerator ConnectRoutine(IObserver<Exception> observer, ConnectionParameter param)
+		public IEnumerator ConnectProcess(IObserver<Exception> observer, ConnectionParameter param)
 		{
 			if(param == null || !param.IsValid())
 			{
@@ -57,7 +92,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				observer.OnCompleted();
 				yield break;
 			}
-			_Param = param;
+			_ConnectionParam = param;
 
 			m_Socket = new WebSocket(param.EndPoint);
 
@@ -82,11 +117,35 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			observer.OnNext(ConnectionError);
 			observer.OnCompleted();
-		} 
+		}
 
-		public void Send(JObject obj)
+		#endregion
+
+		public void Send(JObject obj, string commandName, Action<Exception, JObject> callback)
 		{
+			// 重複したリクエストはエラーとして返す
+			if(_CommandCallbacks.ContainsKey(commandName))
+			{
+				callback.Invoke(new Exception("Duplicate request"), null);
+				return;
+			}
+			// コマンドとコールバックを登録しておく
+			Debug.Log(string.Format("Add Send Command : [{0}]", commandName));
+			_CommandCallbacks.Add(commandName, callback);
+
 			m_Socket.Send(obj.ToString());
+		}
+
+		private void Update()
+		{
+			// 受信したメッセージがキューに残っていれば、アプリケーション側へ渡す
+			if(_MessageQueues.Count > 0)
+			{
+				MessageEventArgs queue = _MessageQueues.FirstOrDefault();
+				OnMessageProcess(queue);
+
+				_MessageQueues.Remove(queue);
+			}
 		}
 
 		private void OnDestroy()
@@ -105,16 +164,82 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			_IsConnected = true;
 
-			_Param.OnOpen();
+			_ConnectionParam.OnOpen();
 		}
 		#endregion
 
 		#region OnMessage
+
+		/// <summary>
+		/// サーバーからのデータ受信イベント
+		/// 
+		/// MainThread で処理する必要があるため、一度キャッシュしておき、
+		/// Update() 内で処理します。
+		/// </summary>
+		/// <param name="args"></param>
 		private void OnMessage(MessageEventArgs args)
+		{
+			_MessageQueues.Add(args);
+		}
+
+		private void OnMessageProcess(MessageEventArgs args)
 		{
 			Debug.Log("WebSocket Message Data: " + args.Data);
 
-			_Param.OnMessage(args.Data);
+			if(string.IsNullOrEmpty(args.Data))
+			{
+				return;
+			}
+
+			MessageData messageData = ParseMessageData(args.Data);
+
+			if(messageData != null && messageData.IsValid())
+			{
+				// サーバーからプッシュされたメッセージの場合、直接クライアント側へ投げる
+				if(messageData.IsPushMessage)
+				{
+					_ConnectionParam.OnMessage(args.Data);
+				}
+				else
+				{
+					// ユーザーコマンドとして実行されていた場合、メッセージデータを返す
+					if(_CommandCallbacks.ContainsKey(messageData.CommandName))
+					{
+#if true
+						_CommandCallbacks[messageData.CommandName].Invoke(
+							(string.IsNullOrEmpty(messageData.ExceptionMessage) ? null : new Exception(messageData.ExceptionMessage)),
+							messageData.Result
+						);
+
+						_CommandCallbacks.Remove(messageData.CommandName);
+#else
+						_ReceiveMessageDataAsObservable.OnNext(messageData);
+#endif
+					}
+				}
+			}
+		}
+
+		private MessageData ParseMessageData(string messageData)
+		{
+			MessageData result = null;
+			try
+			{
+				if(!string.IsNullOrEmpty(messageData))
+				{
+					Debug.Log("messageData : " + messageData);
+
+					JObject obj = JObject.Parse(messageData);
+					result = obj.ToObject<MessageData>();
+				}
+			}
+			catch(Exception ex)
+			{
+				Debug.LogError(ex.Message);
+				throw;
+			}
+
+			return result;
 		}
 		#endregion
 
@@ -129,7 +254,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				ConnectionError = new Exception(args.Message);
 			}
 
-			_Param.OnError(args.Message);
+			_ConnectionParam.OnError(args.Message);
 		}
 		#endregion
 
@@ -151,20 +276,20 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			_IsConnected = false;
 
-			_Param.OnClose();
+			_ConnectionParam.OnClose();
 		}
 		#endregion
 
 		private void OnApplicationPause(bool pauseStatus)
 		{
-			if(pauseStatus)
-			{
-				Debug.Log("applicationWillResignActive or onPause");
-			}
-			else
-			{
-				Debug.Log("applicationDidBecomeActive or onResume");
-			}
+			//if(pauseStatus)
+			//{
+			//	Debug.Log("applicationWillResignActive or onPause");
+			//}
+			//else
+			//{
+			//	Debug.Log("applicationDidBecomeActive or onResume");
+			//}
 		}
 	}
 }
