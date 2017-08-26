@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 
 namespace com.Artefact.FrameworkNetwork.Cores
 {
-	public class Response
-	{
-		public int ResponseCode { get; private set; }
-	}
-
 	#region ConnectionParameter
+
 	public class ConnectionParameter
 	{
 		public string EndPoint { get; set; }
@@ -39,5 +37,31 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				OnClose != null);
 		}
 	}
+
+	#endregion
+
+	#region MessageDataHeader
+
+	[JsonObject]
+	public class MessageData
+	{
+		[JsonProperty("commandName")]
+		public string CommandName { get; private set; }
+
+		[JsonProperty("exceptionMessage")]
+		public string ExceptionMessage { get; private set; }
+
+		[JsonProperty("result")]
+		public JObject Result { get; private set; }
+
+		[JsonProperty("isPushMessage")]
+		public bool IsPushMessage { get; private set; }
+
+		public bool IsValid()
+		{
+			return !string.IsNullOrEmpty(CommandName);
+		}
+	}
+
 	#endregion
 }
