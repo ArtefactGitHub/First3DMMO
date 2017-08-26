@@ -5,7 +5,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 {
 	public class AModule
 	{
-		public void Command<T>(JObject obj, string commandName, Action<T> callback) where T : new()
+		public void Command<T>(JObject obj, string commandName, Action<Exception, T> callback) where T : new()
 		{
 			Connection.Instance.Send(obj);
 		}

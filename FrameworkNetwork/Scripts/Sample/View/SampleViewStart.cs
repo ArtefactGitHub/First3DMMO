@@ -48,7 +48,7 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 					// エラーの場合、エラーメッセージを表示する
 					if(ex != null)
 					{
-						_TextStatusValue.text = string.Format("<color=red>{0}</color>", ex.Message);
+						SampleErrorManager.Instance.SetMessage(ex.Message);
 					}
 
 					_ProcessEndAsObservable.OnNext(ex);

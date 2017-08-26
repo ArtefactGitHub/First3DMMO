@@ -46,7 +46,16 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		{
 			if(!string.IsNullOrEmpty(_Input.text))
 			{
-				_ProcessEndAsObservable.OnNext(null);
+				SampleModuleManager.Instance.Module.Register(_Input.text, (ex, res) =>
+				{
+					// エラーの場合、エラーメッセージを表示する
+					if(ex != null)
+					{
+						SampleErrorManager.Instance.SetMessage(ex.Message);
+					}
+
+					_ProcessEndAsObservable.OnNext(ex);
+				});
 			}
 		}
 	}

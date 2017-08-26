@@ -6,7 +6,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 {
 	public class SampleModule : AModule
 	{
-		public void Register(string userName, Action<Response> callback)
+		public void Register(string userName, Action<Exception, Response> callback)
 		{
 			string commandName = "register";
 
