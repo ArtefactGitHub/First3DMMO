@@ -54,6 +54,8 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 						SampleErrorManager.Instance.SetMessage(ex.Message);
 					}
 
+					Debug.Log(res.ToString());
+
 					_ProcessEndAsObservable.OnNext(ex);
 				});
 			}

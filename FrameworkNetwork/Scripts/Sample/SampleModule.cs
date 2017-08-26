@@ -1,6 +1,7 @@
 ﻿using com.Artefact.FrameworkNetwork.Cores;
 using Newtonsoft.Json.Linq;
 using System;
+using UniRx;
 
 namespace com.Artefact.FrameworkNetwork.Samples
 {
@@ -22,7 +23,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			obj.Add("state", state);
 			obj.Add("data", data);
 
-			Command<Response>(obj, commandName, callback);
+			Command(obj, commandName, callback);
 		}
 	}
 }

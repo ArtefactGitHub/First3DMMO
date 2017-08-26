@@ -75,16 +75,5 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			}
 		}
 		#endregion
-
-		void Update()
-		{
-			//if(Input.GetKeyUp("a"))
-			//{
-			//	Module.Register("test", (res) =>
-			//	{
-			//		Debug.Log("end");
-			//	});
-			//}
-		}
 	}
 }

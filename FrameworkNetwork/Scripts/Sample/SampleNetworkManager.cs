@@ -40,18 +40,27 @@ namespace com.Artefact.FrameworkNetwork.Samples
 
 		public void OnOpen()
 		{
+			Log("SampleNetworkManager.OnOpen()");
 		}
 
 		public void OnMessage(string message)
 		{
+			Log("SampleNetworkManager.OnMessage()\n" + message);
 		}
 
 		public void OnError(string message)
 		{
+			Log("SampleNetworkManager.OnError()\n" + message);
 		}
 
 		public void OnClose()
 		{
+			Log("SampleNetworkManager.OnClose()");
+		}
+
+		private void Log(string str)
+		{
+			Debug.Log(string.Format("<color=yellow>{0}</color>", str));
 		}
 	}
 }
