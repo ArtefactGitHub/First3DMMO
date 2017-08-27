@@ -46,18 +46,21 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		{
 			if(!string.IsNullOrEmpty(_Input.text))
 			{
-				SampleModuleManager.Instance.Module.Register(_Input.text, (ex, res) =>
+				SampleModuleManager.Instance.Module.Register(_Input.text).Subscribe(result =>
 				{
 					// エラーの場合、エラーメッセージを表示する
-					if(ex != null)
+					if(result.Exception != null)
 					{
-						SampleErrorManager.Instance.SetMessage(ex.Message);
+						SampleErrorManager.Instance.SetMessage(result.Exception.Message);
 					}
 
-					Debug.Log(res.ToString());
+					if(result.Result != null)
+					{
+						Debug.Log(result.Result.ToString());
+					}
 
-					_ProcessEndAsObservable.OnNext(ex);
-				});
+					_ProcessEndAsObservable.OnNext(result.Exception);
+				}).AddTo(this);
 			}
 		}
 	}

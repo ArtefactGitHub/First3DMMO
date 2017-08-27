@@ -7,7 +7,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 {
 	public class SampleModule : AModule
 	{
-		public void Register(string userName, Action<Exception, Response> callback)
+		public IObservable<ResponseResult<SampleResponseRegister>> Register(string userName)
 		{
 			string commandName = "register";
 
@@ -23,7 +23,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			obj.Add("state", state);
 			obj.Add("data", data);
 
-			Command(obj, commandName, callback);
+			return Command<SampleResponseRegister>(obj, commandName);
 		}
 	}
 }

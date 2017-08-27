@@ -27,7 +27,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		/// <param name="obj"></param>
 		/// <param name="commandName"></param>
 		/// <param name="callback"></param>
-		void Send(JObject obj, string commandName, Action<Exception, JObject> callback);
+		IObservable<IMessageData> Send(JObject obj, string commandName);
 	}
 
 	public class Connection : MonoBehaviour, IConnection
@@ -60,19 +60,12 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		private Exception ConnectionError { get; set; }
 
 		/// <summary>
-		/// ユーザーコマンドのコールバックリスト 
-		/// 
-		/// コマンド名を key とし、コマンド結果受信時に対応したコールバックを実行します。
-		/// </summary>
-		private Dictionary<string, Action<Exception, JObject>> _CommandCallbacks = new Dictionary<string, Action<Exception, JObject>>();
-
-		/// <summary>
 		/// OnMessage で受け取ったメッセージデータ 
 		/// 
 		/// MainThread で処理する必要があるため、一度キャッシュしておき、
 		/// Update() 内で処理します。
 		/// </summary>
-		private List<MessageEventArgs> _MessageQueues = new List<MessageEventArgs>();
+		private List<MessageData> _MessageDataQueues = new List<MessageData>();
 
 		#region Initialize
 
@@ -121,30 +114,56 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 		#endregion
 
-		public void Send(JObject obj, string commandName, Action<Exception, JObject> callback)
-		{
-			// 重複したリクエストはエラーとして返す
-			if(_CommandCallbacks.ContainsKey(commandName))
-			{
-				callback.Invoke(new Exception("Duplicate request"), null);
-				return;
-			}
-			// コマンドとコールバックを登録しておく
-			Debug.Log(string.Format("Add Send Command : [{0}]", commandName));
-			_CommandCallbacks.Add(commandName, callback);
+		#region Send
 
+		public IObservable<IMessageData> Send(JObject obj, string commandName)
+		{
 			m_Socket.Send(obj.ToString());
+
+			// ユーザーコマンドに対する受信を非同期で待ち、IMessageData の形で返す
+			return Observable.FromCoroutine<IMessageData>(observer => GetReceivedMessageData(observer, commandName)).SelectMany(messageData =>
+			{
+				return Observable.Return(messageData);
+			});
 		}
+
+		/// <summary>
+		/// ユーザーコマンドの受信データを取得する
+		/// </summary>
+		/// <param name="observer"></param>
+		/// <param name="commandName"></param>
+		/// <returns></returns>
+		private IEnumerator GetReceivedMessageData(IObserver<IMessageData> observer, string commandName)
+		{
+			while(true)
+			{
+				MessageData messageData = _MessageDataQueues.FirstOrDefault(x => x.CommandName.Equals(commandName));
+				if(messageData != null && messageData.IsValid())
+				{
+					observer.OnNext(messageData);
+					observer.OnCompleted();
+					yield break;
+				}
+
+				yield return null;
+			}
+		}
+
+		#endregion
 
 		private void Update()
 		{
-			// 受信したメッセージがキューに残っていれば、アプリケーション側へ渡す
-			if(_MessageQueues.Count > 0)
+			// サーバーからプッシュされたメッセージ（ユーザーコマンドの戻り値ではない）を
+			// 受信していた場合、直接アプリケーション側へ渡す
+			if(_MessageDataQueues.Count > 0)
 			{
-				MessageEventArgs queue = _MessageQueues.FirstOrDefault();
-				OnMessageProcess(queue);
+				MessageData messageData = GetPushMessageData();
+				if(messageData != null)
+				{
+					_ConnectionParam.OnMessage(messageData.Result.ToString());
 
-				_MessageQueues.Remove(queue);
+					_MessageDataQueues.Remove(messageData);
+				}
 			}
 		}
 
@@ -179,43 +198,12 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		/// <param name="args"></param>
 		private void OnMessage(MessageEventArgs args)
 		{
-			_MessageQueues.Add(args);
-		}
-
-		private void OnMessageProcess(MessageEventArgs args)
-		{
-			Debug.Log("WebSocket Message Data: " + args.Data);
-
-			if(string.IsNullOrEmpty(args.Data))
+			if(!string.IsNullOrEmpty(args.Data))
 			{
-				return;
-			}
-
-			MessageData messageData = ParseMessageData(args.Data);
-
-			if(messageData != null && messageData.IsValid())
-			{
-				// サーバーからプッシュされたメッセージの場合、直接クライアント側へ投げる
-				if(messageData.IsPushMessage)
+				MessageData messageData = ParseMessageData(args.Data);
+				if(messageData != null && messageData.IsValid())
 				{
-					_ConnectionParam.OnMessage(args.Data);
-				}
-				else
-				{
-					// ユーザーコマンドとして実行されていた場合、メッセージデータを返す
-					if(_CommandCallbacks.ContainsKey(messageData.CommandName))
-					{
-#if true
-						_CommandCallbacks[messageData.CommandName].Invoke(
-							(string.IsNullOrEmpty(messageData.ExceptionMessage) ? null : new Exception(messageData.ExceptionMessage)),
-							messageData.Result
-						);
-
-						_CommandCallbacks.Remove(messageData.CommandName);
-#else
-						_ReceiveMessageDataAsObservable.OnNext(messageData);
-#endif
-					}
+					_MessageDataQueues.Add(messageData);
 				}
 			}
 		}
@@ -227,7 +215,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 			{
 				if(!string.IsNullOrEmpty(messageData))
 				{
-					Debug.Log("messageData : " + messageData);
+					Debug.Log("ParseMessageData : " + messageData);
 
 					JObject obj = JObject.Parse(messageData);
 					result = obj.ToObject<MessageData>();
@@ -241,9 +229,33 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			return result;
 		}
+
+		/// <summary>
+		/// サーバーからプッシュされたメッセージの取得
+		/// </summary>
+		/// <returns></returns>
+		private MessageData GetPushMessageData()
+		{
+			MessageData result = _MessageDataQueues.FirstOrDefault(messageData =>
+			{
+				if(messageData != null && messageData.IsValid())
+				{
+					if(messageData.IsPushMessage)
+					{
+						return true;
+					}
+				}
+
+				return false;
+			});
+
+			return result;
+		}
+
 		#endregion
 
 		#region OnError
+
 		private void OnError(ErrorEventArgs args)
 		{
 			Debug.Log("WebSocket Error Message: " + args.Message);
@@ -256,9 +268,11 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			_ConnectionParam.OnError(args.Message);
 		}
+
 		#endregion
 
 		#region OnClose
+
 		private void OnClose(CloseEventArgs args)
 		{
 			string message = string.Format("WebSocket Close\n Code : [{0}]\n Reason : [{1}]", args.Code, args.Reason);
@@ -278,6 +292,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			_ConnectionParam.OnClose();
 		}
+
 		#endregion
 
 		private void OnApplicationPause(bool pauseStatus)

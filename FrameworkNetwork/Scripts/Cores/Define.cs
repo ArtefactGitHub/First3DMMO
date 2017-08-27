@@ -42,8 +42,15 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 	#region MessageDataHeader
 
+	public interface IMessageData
+	{
+		string ExceptionMessage { get; }
+
+		JObject Result { get; }
+	}
+
 	[JsonObject]
-	public class MessageData
+	public class MessageData : IMessageData
 	{
 		[JsonProperty("commandName")]
 		public string CommandName { get; private set; }
@@ -60,6 +67,19 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		public bool IsValid()
 		{
 			return !string.IsNullOrEmpty(CommandName);
+		}
+	}
+
+	public class MessageDataException : IMessageData
+	{
+		public string ExceptionMessage { get; private set; }
+
+		public JObject Result { get; private set; }
+
+		public MessageDataException(string exceptionMessage, JObject result)
+		{
+			this.ExceptionMessage = exceptionMessage;
+			this.Result = result;
 		}
 	}
 

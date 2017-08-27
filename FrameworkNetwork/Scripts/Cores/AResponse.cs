@@ -1,7 +1,21 @@
 ﻿using Newtonsoft.Json.Linq;
+using System;
 
 namespace com.Artefact.FrameworkNetwork.Cores
 {
+	public class ResponseResult<T> where T : AResponse, new()
+	{
+		public Exception Exception { get; private set; }
+
+		public T Result { get; private set; }
+
+		public ResponseResult(Exception ex, T result)
+		{
+			this.Exception = ex;
+			this.Result = result;
+		}
+	}
+
 	/// <summary>
 	/// サーバーからの受信データクラスの抽象クラス
 	/// 

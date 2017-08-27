@@ -8,7 +8,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		public static readonly string EndPoint = "ws://my-nodejs-app-artefactcloud.c9users.io/";
 	}
 
-	public class Response : AResponse
+	public class SampleResponseRegister : AResponse
 	{
 		public string UserName { get; private set; }
 

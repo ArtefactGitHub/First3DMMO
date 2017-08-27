@@ -1,30 +1,30 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using UniRx;
 
 namespace com.Artefact.FrameworkNetwork.Cores
 {
 	public abstract class AModule
 	{
-		public void Command<T>(JObject obj, string commandName, Action<Exception, T> callback) where T : AResponse, new()
+		public IObservable<ResponseResult<T>> Command<T>(JObject obj, string commandName) where T : AResponse, new()
 		{
-#if true
-			Connection.Instance.Send(obj, commandName, (Exception ex, JObject result) =>
+			return Connection.Instance.Send(obj, commandName).SelectMany(messageData =>
 			{
-				if(callback == null)
+				if(messageData == null)
 				{
-					return;
+					return Observable.Return(new ResponseResult<T>(new Exception("no message data"), null));
 				}
 
-				if(ex != null)
+				if(!string.IsNullOrEmpty(messageData.ExceptionMessage))
 				{
-					callback.Invoke(ex, default(T));
-					return;
+					return Observable.Return(new ResponseResult<T>(new Exception(messageData.ExceptionMessage), null));
 				}
 
 				T response = new T();
+				Exception ex = null;
 				try
 				{
-					response.TryParse(result);
+					response.TryParse(messageData.Result);
 				}
 				catch(Exception exParse)
 				{
@@ -32,11 +32,8 @@ namespace com.Artefact.FrameworkNetwork.Cores
 					throw;
 				}
 
-				callback.Invoke(ex, response);
+				return Observable.Return(new ResponseResult<T>(ex, response));
 			});
-#else
-			Connection.Instance.Send(obj, commandName, null);
-#endif
 		}
 	}
 }
