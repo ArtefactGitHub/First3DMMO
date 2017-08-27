@@ -1,13 +1,12 @@
 ﻿using com.Artefact.FrameworkNetwork.Cores;
 using Newtonsoft.Json.Linq;
-using System;
 using UniRx;
 
 namespace com.Artefact.FrameworkNetwork.Samples
 {
 	public class SampleModule : AModule
 	{
-		public IObservable<ResponseResult<SampleResponseRegister>> Register(string userName)
+		public IObservable<IResponseResult<SampleResponseRegister>> Register(string userName)
 		{
 			string commandName = "register";
 

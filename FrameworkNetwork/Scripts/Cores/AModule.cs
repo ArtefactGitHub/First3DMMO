@@ -6,18 +6,22 @@ namespace com.Artefact.FrameworkNetwork.Cores
 {
 	public abstract class AModule
 	{
-		public IObservable<ResponseResult<T>> Command<T>(JObject obj, string commandName) where T : AResponse, new()
+		public IObservable<IResponseResult<T>> Command<T>(JObject obj, string commandName) where T : AResponse, new()
 		{
 			return Connection.Instance.Send(obj, commandName).SelectMany(messageData =>
 			{
+				ResponseResult<T> result = new ResponseResult<T>();
+
 				if(messageData == null)
 				{
-					return Observable.Return(new ResponseResult<T>(new Exception("no message data"), null));
+					result.SetParameter(new Exception("no message data"), null);
+					return Observable.Return<IResponseResult<T>>(result);
 				}
 
 				if(!string.IsNullOrEmpty(messageData.ExceptionMessage))
 				{
-					return Observable.Return(new ResponseResult<T>(new Exception(messageData.ExceptionMessage), null));
+					result.SetParameter(new Exception(messageData.ExceptionMessage), null);
+					return Observable.Return<IResponseResult<T>>(result);
 				}
 
 				T response = new T();
@@ -32,7 +36,8 @@ namespace com.Artefact.FrameworkNetwork.Cores
 					throw;
 				}
 
-				return Observable.Return(new ResponseResult<T>(ex, response));
+				result.SetParameter(ex, response);
+				return Observable.Return<IResponseResult<T>>(result);
 			});
 		}
 	}

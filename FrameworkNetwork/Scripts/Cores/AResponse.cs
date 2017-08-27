@@ -3,13 +3,24 @@ using System;
 
 namespace com.Artefact.FrameworkNetwork.Cores
 {
-	public class ResponseResult<T> where T : AResponse, new()
+	public interface IResponseResult<T>
+	{
+		Exception Exception { get; }
+
+		T Result { get; }
+	}
+
+	public class ResponseResult<T> : IResponseResult<T> where T : AResponse, new()
 	{
 		public Exception Exception { get; private set; }
 
 		public T Result { get; private set; }
 
-		public ResponseResult(Exception ex, T result)
+		public ResponseResult()
+		{
+		}
+
+		public void SetParameter(Exception ex, T result)
 		{
 			this.Exception = ex;
 			this.Result = result;
