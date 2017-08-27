@@ -26,6 +26,12 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		protected override IEnumerator _Initialize()
 		{
 			gameObject.SetActive(true);
+
+			if(SamplePlayerPrefs.HasKey(SampleDefine.KeyUserName))
+			{
+				_ProcessEndAsObservable.OnNext(null);
+			}
+
 			yield break;
 		}
 
@@ -57,6 +63,8 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 					if(result.Result != null)
 					{
 						Debug.Log(result.Result.ToString());
+
+						SamplePlayerPrefs.SetString(SampleDefine.KeyUserName, result.Result.UserName);
 					}
 
 					_ProcessEndAsObservable.OnNext(result.Exception);
