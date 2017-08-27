@@ -10,6 +10,11 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			return PlayerPrefs.HasKey(key);
 		}
 
+		public static void DeleteAll()
+		{
+			PlayerPrefs.DeleteAll();
+		}
+
 		public static int GetInt(string key)
 		{
 			return PlayerPrefs.GetInt(key);

@@ -16,6 +16,9 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		private Button _ButtonRun = null;
 
 		[SerializeField]
+		private Button _ButtonClearPlayerPrefs = null;
+
+		[SerializeField]
 		private Text _TextStatusValue = null;
 
 		public override void Finalizer()
@@ -34,6 +37,11 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 			_ButtonRun.OnClickAsObservable().Subscribe(_ =>
 			{
 				Setup();
+			}).AddTo(this);
+
+			_ButtonClearPlayerPrefs.OnClickAsObservable().Subscribe(_ =>
+			{
+				SamplePlayerPrefs.DeleteAll();
 			}).AddTo(this);
 		}
 
