@@ -11,8 +11,16 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		[SerializeField]
 		private List<AView> _Views = new List<AView>();
 
+		[SerializeField]
+		private bool IsPlayerPrefsClear = true;
+
 		private void Start()
 		{
+			if(IsPlayerPrefsClear)
+			{
+				SamplePlayerPrefs.DeleteAll();
+			}
+
 			Observable.FromCoroutine(() => Run()).Subscribe().AddTo(this);
 		}
 

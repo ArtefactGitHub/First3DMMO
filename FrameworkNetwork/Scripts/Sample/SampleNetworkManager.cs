@@ -60,7 +60,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 
 		private void Log(string str)
 		{
-			Debug.Log(string.Format("<color=yellow>{0}</color>", str));
+			Debug.Log(string.Format("<color=green>{0}</color>", str));
 		}
 	}
 }
