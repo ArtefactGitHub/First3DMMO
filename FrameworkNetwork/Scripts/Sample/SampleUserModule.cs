@@ -5,7 +5,7 @@ using UniRx;
 
 namespace com.Artefact.FrameworkNetwork.Samples
 {
-	public class SampleModule : AModule
+	public class SampleUserModule : AModule
 	{
 		public override string ModuleName { get { return "user"; } }
 

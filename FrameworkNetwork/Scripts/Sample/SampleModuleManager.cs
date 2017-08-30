@@ -23,10 +23,10 @@ namespace com.Artefact.FrameworkNetwork.Samples
 
 		private SampleModuleManager()
 		{
-			Module = new SampleModule();
+			Module = new SampleUserModule();
 		}
 		#endregion
 
-		public SampleModule Module { get; private set; }
+		public SampleUserModule Module { get; private set; }
 	}
 }
