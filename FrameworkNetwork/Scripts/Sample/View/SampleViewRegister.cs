@@ -44,20 +44,24 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 
 			_ButtonRun.OnClickAsObservable().Subscribe(_ =>
 			{
-				Setup();
+				Register();
 			}).AddTo(this);
 		}
 
-		private void Setup()
+		private void Register()
 		{
 			if(!string.IsNullOrEmpty(_Input.text))
 			{
-				SampleModuleManager.Instance.Module.Register(_Input.text).Subscribe(result =>
+				//TODO 暗号化
+				string password = _Input.text.GetHashCode().ToString();
+
+				SampleModuleManager.Instance.Module.Register(_Input.text, password).Subscribe(result =>
 				{
 					// エラーの場合、エラーメッセージを表示する
 					if(result.Exception != null)
 					{
 						SampleErrorManager.Instance.SetMessage(result.Exception.Message);
+						return;
 					}
 
 					if(result.Result != null)
@@ -65,11 +69,34 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 						Debug.Log(result.Result.ToString());
 
 						SamplePlayerPrefs.SetString(SampleDefine.KeyUserName, result.Result.UserName);
+						SamplePlayerPrefs.SetString(SampleDefine.KeyPassword, password);
 					}
 
-					_ProcessEndAsObservable.OnNext(result.Exception);
+					Login();
 				}).AddTo(this);
 			}
+		}
+
+		private void Login()
+		{
+			string userName = SamplePlayerPrefs.GetString(SampleDefine.KeyUserName);
+
+			SampleModuleManager.Instance.Module.Login(userName).Subscribe(result =>
+			{
+				// エラーの場合、エラーメッセージを表示する
+				if(result.Exception != null)
+				{
+					SampleErrorManager.Instance.SetMessage(result.Exception.Message);
+					return;
+				}
+
+				if(result.Result != null)
+				{
+					Debug.Log(result.Result.ToString());
+				}
+
+				_ProcessEndAsObservable.OnNext(result.Exception);
+			}).AddTo(this);
 		}
 	}
 }

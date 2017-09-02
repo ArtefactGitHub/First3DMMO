@@ -9,7 +9,19 @@ namespace com.Artefact.FrameworkNetwork.Samples
 	{
 		public override string ModuleName { get { return "user"; } }
 
-		public IObservable<IResponseResult<SampleResponseRegister>> Register(string userName)
+		public IObservable<IResponseResult<SampleResponseRegister>> Register(string userName, string password)
+		{
+			JObject data = new JObject();
+			data.Add("name", new JValue(userName));
+			data.Add("password", new JValue(password));
+			
+			JObject obj = new JObject();
+			obj.Add("data", data);
+
+			return Command<SampleResponseRegister>(obj, "register");
+		}
+
+		public IObservable<IResponseResult<SampleResponseLogin>> Login(string userName)
 		{
 			JObject data = new JObject();
 			data.Add("name", new JValue(userName));
@@ -17,7 +29,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			JObject obj = new JObject();
 			obj.Add("data", data);
 
-			return Command<SampleResponseRegister>(obj, "register");
+			return Command<SampleResponseLogin>(obj, "login");
 		}
 	}
 }
