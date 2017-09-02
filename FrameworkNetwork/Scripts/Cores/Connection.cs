@@ -140,6 +140,8 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				MessageData messageData = _MessageDataQueues.FirstOrDefault(x => x.CommandName.Equals(commandName));
 				if(messageData != null && messageData.IsValid())
 				{
+					_MessageDataQueues.Remove(messageData);
+
 					observer.OnNext(messageData);
 					observer.OnCompleted();
 					yield break;
