@@ -38,7 +38,6 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				catch(Exception exParse)
 				{
 					ex = exParse;
-					throw;
 				}
 
 				result.SetParameter(ex, response);
