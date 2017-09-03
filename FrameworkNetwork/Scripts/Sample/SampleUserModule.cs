@@ -12,7 +12,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		public IObservable<IResponseResult<SampleResponseRegister>> Register(string userName, string password)
 		{
 			JObject data = new JObject();
-			data.Add("name", new JValue(userName));
+			data.Add("username", new JValue(userName));
 			data.Add("password", new JValue(password));
 			
 			JObject obj = new JObject();
@@ -24,7 +24,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		public IObservable<IResponseResult<SampleResponseLogin>> Login(string userName)
 		{
 			JObject data = new JObject();
-			data.Add("name", new JValue(userName));
+			data.Add("username", new JValue(userName));
 
 			JObject obj = new JObject();
 			obj.Add("data", data);
