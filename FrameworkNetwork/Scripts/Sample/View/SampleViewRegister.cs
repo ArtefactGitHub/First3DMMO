@@ -29,7 +29,7 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 
 			if(SamplePlayerPrefs.HasKey(SampleDefine.KeyUserName))
 			{
-				_ProcessEndAsObservable.OnNext(null);
+				Login();
 			}
 
 			yield break;
@@ -80,8 +80,9 @@ namespace com.Artefact.FrameworkNetwork.Samples.Views
 		private void Login()
 		{
 			string userName = SamplePlayerPrefs.GetString(SampleDefine.KeyUserName);
+			string password = SamplePlayerPrefs.GetString(SampleDefine.KeyPassword);
 
-			SampleModuleManager.Instance.Module.Login(userName).Subscribe(result =>
+			SampleModuleManager.Instance.Module.Login(userName, password).Subscribe(result =>
 			{
 				// エラーの場合、エラーメッセージを表示する
 				if(result.Exception != null)

@@ -21,7 +21,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 		{
 			ResponseCode = obj[KeyResponseCode].ToObject<int>();
 
-			UserName = obj[KeyData]["userName"].ToObject<string>();
+			UserName = obj[KeyData][SampleDefine.KeyUserName].ToObject<string>();
 		}
 
 		public override string ToString()
@@ -32,18 +32,14 @@ namespace com.Artefact.FrameworkNetwork.Samples
 
 	public class SampleResponseLogin : AResponse
 	{
-		public string UserName { get; private set; }
-
 		public override void TryParse(JObject obj)
 		{
 			ResponseCode = obj[KeyResponseCode].ToObject<int>();
-
-			UserName = obj[KeyData]["userName"].ToObject<string>();
 		}
 
 		public override string ToString()
 		{
-			return string.Format("SampleResponseLogin\n ResponseCode={0} UserName={1}", ResponseCode, UserName);
+			return string.Format("SampleResponseLogin\n ResponseCode={0}", ResponseCode);
 		}
 	}
 }

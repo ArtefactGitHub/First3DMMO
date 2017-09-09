@@ -9,10 +9,10 @@ namespace com.Artefact.FrameworkNetwork.Samples
 	{
 		public override string ModuleName { get { return "user"; } }
 
-		public IObservable<IResponseResult<SampleResponseRegister>> Register(string userName, string password)
+		public IObservable<IResponseResult<SampleResponseRegister>> Register(string playerName, string password)
 		{
 			JObject data = new JObject();
-			data.Add("username", new JValue(userName));
+			data.Add("playerName", new JValue(playerName));
 			data.Add("password", new JValue(password));
 			
 			JObject obj = new JObject();
@@ -21,10 +21,11 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			return Command<SampleResponseRegister>(obj, "register");
 		}
 
-		public IObservable<IResponseResult<SampleResponseLogin>> Login(string userName)
+		public IObservable<IResponseResult<SampleResponseLogin>> Login(string userName, string password)
 		{
 			JObject data = new JObject();
-			data.Add("username", new JValue(userName));
+			data.Add("userName", new JValue(userName));
+			data.Add("password", new JValue(password));
 
 			JObject obj = new JObject();
 			obj.Add("data", data);
