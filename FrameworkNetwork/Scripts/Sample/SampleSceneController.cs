@@ -49,39 +49,5 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			}
 			yield break;
 		}
-
-		#region UserId
-		public static readonly string KeyUserId = "UserId";
-		public static readonly string KeyUserName = "UserName";
-
-		public int UserId
-		{
-			get
-			{
-				if(PlayerPrefs.HasKey(KeyUserId))
-				{
-					return PlayerPrefs.GetInt(KeyUserId, 0);
-				}
-				else
-				{
-					return 0;
-				}
-			}
-		}
-		public string UserName
-		{
-			get
-			{
-				if(PlayerPrefs.HasKey(KeyUserName))
-				{
-					return PlayerPrefs.GetString(KeyUserName, string.Empty);
-				}
-				else
-				{
-					return string.Empty;
-				}
-			}
-		}
-		#endregion
 	}
 }
