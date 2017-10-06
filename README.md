@@ -1,4 +1,4 @@
-# Framework_Cl_mBaas
+# Framework_Cl_WebSocket 
 UnityとWebSocketを利用した、個人研究・開発用のプロジェクトです。  
 Assets/ 下のSubtreeで利用することを想定しています。
 
