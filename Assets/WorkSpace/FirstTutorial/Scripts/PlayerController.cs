@@ -1,18 +1,43 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class PlayerController : MonoBehaviour {
-
-	[SerializeField]
-	private float m_Speed = 10.0f;
-
-	private void FixedUpdate()
+namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
+{
+	[RequireComponent(typeof(Rigidbody))]
+	public class PlayerController : MonoBehaviour
 	{
-		float x = Input.GetAxis("Horizontal");
-		float z = Input.GetAxis("Vertical");
+		[SerializeField]
+		private float Movement = 500f;
 
-		Rigidbody rigidbody = GetComponent<Rigidbody>();
+		[SerializeField]
+		private float RotateSpeed = 10f;
 
-		rigidbody.AddForce(x * m_Speed, 0, z * m_Speed);
+		private Vector3 m_VecMove = Vector3.zero;
+
+		private Rigidbody m_Rigidbody;
+
+		void Start()
+		{
+			m_Rigidbody = GetComponent<Rigidbody>();
+			// 回転しないようにする
+			m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+		}
+
+		void Update()
+		{
+			m_VecMove.x = Input.GetAxis("Horizontal") * Time.deltaTime * Movement;
+			m_VecMove.z = Input.GetAxis("Vertical") * Time.deltaTime * Movement;
+
+			if(m_VecMove.magnitude > 0.01f)
+			{
+				float rotateDelta = RotateSpeed * Time.deltaTime;
+				Quaternion quaterninon = Quaternion.LookRotation(m_VecMove);
+				transform.rotation = Quaternion.Lerp(transform.rotation, quaterninon, rotateDelta);
+			}
+		}
+
+		void FixedUpdate()
+		{
+			m_Rigidbody.velocity = m_VecMove;
+		}
 	}
 }
