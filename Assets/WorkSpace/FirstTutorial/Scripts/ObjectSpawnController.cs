@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Assertions;
 
-namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
+namespace com.Artefact.First3DMMO.WorkSpace
 {
 	public interface IObjectSpawnController
 	{

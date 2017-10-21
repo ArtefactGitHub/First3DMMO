@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
+namespace com.Artefact.First3DMMO.WorkSpace
 {
 	public class FollowPlayer : MonoBehaviour
 	{

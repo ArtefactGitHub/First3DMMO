@@ -27,6 +27,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
 			m_VecMove.x = Input.GetAxis("Horizontal") * Time.deltaTime * Movement;
 			m_VecMove.z = Input.GetAxis("Vertical") * Time.deltaTime * Movement;
 
+			//Debug.Log(string.Format("H[{0}] V[{1}]", Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
+			//Debug.Log(string.Format("x[{0}] z[{1}]", m_VecMove.x, m_VecMove.z));
+
 			if(m_VecMove.magnitude > 0.01f)
 			{
 				float rotateDelta = RotateSpeed * Time.deltaTime;
