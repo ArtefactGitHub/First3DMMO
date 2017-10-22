@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using com.Artefact.First3DMMO.WorkSpace.InputStick;
+using UnityEngine;
 
 namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
 {
@@ -10,6 +11,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
 
 		[SerializeField]
 		private float RotateSpeed = 10f;
+
+		/// <summary> 入力管理クラス </summary>
+		[SerializeField]
+		private PlayerInputController m_Input = null;
 
 		private Vector3 m_VecMove = Vector3.zero;
 
@@ -24,11 +29,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
 
 		void Update()
 		{
-			m_VecMove.x = Input.GetAxis("Horizontal") * Time.deltaTime * Movement;
-			m_VecMove.z = Input.GetAxis("Vertical") * Time.deltaTime * Movement;
-
-			//Debug.Log(string.Format("H[{0}] V[{1}]", Input.GetAxis("Horizontal"), Input.GetAxis("Vertical")));
-			//Debug.Log(string.Format("x[{0}] z[{1}]", m_VecMove.x, m_VecMove.z));
+			m_VecMove.x = m_Input.GetAxisHorizontal() * Time.deltaTime * Movement;
+			m_VecMove.z = m_Input.GetAxisVertical() * Time.deltaTime * Movement;
 
 			if(m_VecMove.magnitude > 0.01f)
 			{
