@@ -2,6 +2,10 @@
 
 namespace com.Artefact.First3DMMO.WorkSpace.FirstTutorial
 {
+	/// <summary>
+	/// Unity公式のチュートリアル勉強用のシーン
+	/// https://github.com/unity3d-jp/FirstTutorial/wiki
+	/// </summary>
 	public class SceneController : MonoBehaviour
 	{
 		[SerializeField]
