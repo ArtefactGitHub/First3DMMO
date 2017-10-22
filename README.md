@@ -1,6 +1,6 @@
 # First3DMMO
 
-MMO（Massively Multiplayer Online）の個人研究・開発用のプロジェクトです。
+Unityを利用した、MMO（Massively Multiplayer Online）の個人研究・開発用のプロジェクトです。
 
 
 ### ◆ライセンス
