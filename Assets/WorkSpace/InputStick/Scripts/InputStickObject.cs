@@ -20,7 +20,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 	public class InputStickObject : MonoBehaviour, IInputStickObject, IPointerDownHandler, IDragHandler, IPointerEnterHandler, IPointerUpHandler
 	{
 		/// <summary> スティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)） </summary>
-		public Vector2 Vector { get { return m_Vector; } }
+		public Vector2 Vector { get; private set; }
 
 		[SerializeField]
 		private Image m_ImageStick = null;
@@ -31,13 +31,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 
 		private float m_RadiusHalf = 0f;
 
-		private Vector2 m_PositionOffset = Vector2.zero;
-
-		private Vector2 m_Vector = Vector2.zero;
-
 		private void Start()
 		{
 			m_RadiusHalf = m_Radius / 2.0f;
+			Vector = Vector2.zero;
 		}
 
 		#region EventSystem
@@ -52,7 +49,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 
 			m_ImageStick.rectTransform.anchoredPosition = pos;
 			// 入力ベクトルを正規化
-			m_Vector = pos.normalized;
+			Vector = pos.normalized;
 		}
 
 		/// <summary>
@@ -68,7 +65,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 			m_ImageStick.rectTransform.anchoredPosition = pos;
 
 			// 入力ベクトルを正規化
-			m_Vector = pos.normalized;
+			Vector = pos.normalized;
 		}
 
 		/// <summary>
@@ -79,7 +76,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 		{
 			// スティックを初期座標へ戻し、入力ベクトルも初期化する
 			m_ImageStick.rectTransform.anchoredPosition3D = Vector2.zero;
-			m_Vector = Vector2.zero;
+			Vector = Vector2.zero;
 		}
 
 		#endregion

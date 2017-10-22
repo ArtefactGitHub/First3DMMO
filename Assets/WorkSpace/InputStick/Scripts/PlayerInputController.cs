@@ -1,9 +1,14 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UniRx.Triggers;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 {
 	public class PlayerInputController : MonoBehaviour
 	{
+		public bool IsBoost { get; private set; }
+
 		[SerializeField]
 		private bool m_UseStick = true;
 
@@ -11,9 +16,20 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStick
 		[SerializeField]
 		private InputStickObject m_LeftStick = null;
 
-		/// <summary> 右スティック </summary>
+		///// <summary> 右スティック </summary>
+		//[SerializeField]
+		//private InputStickObject m_RightStick = null;
+
 		[SerializeField]
-		private InputStickObject m_RightStick = null;
+		private Image  m_Boost = null;
+
+		private void Start()
+		{
+			// ブースト状態の切り替え
+			var trigger = m_Boost.gameObject.AddComponent<ObservableEventTrigger>();
+			trigger.OnPointerDownAsObservable().Subscribe(_ => IsBoost = true).AddTo(this);
+			trigger.OnPointerUpAsObservable().Subscribe(_ => IsBoost = false).AddTo(this);
+		}
 
 		public float GetAxisHorizontal()
 		{
