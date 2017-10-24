@@ -45,7 +45,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 
 #if UNITY_EDITOR
 			if(m_UseStick) result = m_InputStick.CameraVector.x;
-			else result = Input.GetAxis("Mouse X");
+			else result = (Input.GetMouseButton(1) ? Input.GetAxis("Mouse X") : 0f);
 #else
 			result = m_InputStick.CameraVector.x;
 #endif
@@ -59,7 +59,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 
 #if UNITY_EDITOR
 			if(m_UseStick) result = m_InputStick.CameraVector.y;
-			else result = Input.GetAxis("Mouse Y");
+			else result = (Input.GetMouseButton(1) ? Input.GetAxis("Mouse Y") : 0f);
 #else
 			result = m_InputStick.CameraVector.y;
 #endif
