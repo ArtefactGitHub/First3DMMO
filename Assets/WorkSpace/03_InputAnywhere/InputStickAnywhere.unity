@@ -587,7 +587,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UseStick: 1
-  m_LeftStick: {fileID: 1956699206}
+  m_InputStick: {fileID: 1956699206}
   m_Boost: {fileID: 1046626703}
 --- !u!1 &982353562
 GameObject:
@@ -989,10 +989,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1572571274}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 825d969c231489348810397b58fcbdac, type: 3}
+  m_Script: {fileID: 11500000, guid: 1b2cb4abef315ad4da70a1ffa72f0b35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_Target: {fileID: 394732632}
+  m_Input: {fileID: 394732634}
 --- !u!1 &1748827888
 GameObject:
   m_ObjectHideFlags: 0
