@@ -11,9 +11,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 	/// </summary>
 	public interface IInputStickObject
 	{
-		Vector2 Vector { get; }
+		/// <summary> 移動スティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)）のストリーム </summary>
+		IObservable<Vector2> OnInputLeftStickAsObservable { get; }
 
-		Vector2 CameraVector { get; }
+		/// <summary> カメラスティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)）のストリーム </summary>
+		IObservable<Vector2> OnInputRightStickAsObservable { get; }
 
 		//Vector2 ClickPosition { get; }
 		//IObservable<Vector2> OnClickPositionAsObservable { get; }
@@ -26,16 +28,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 	/// </summary>
 	public class InputStickObject : MonoBehaviour, IInputStickObject, IPointerDownHandler, IDragHandler, IPointerClickHandler, IPointerUpHandler
 	{
-		/// <summary> 移動スティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)） </summary>
-#if UNITY_EDITOR
-		// Unityエディタ上の PointerId は -1 
-		public Vector2 Vector { get { return m_InputDatas[-1].Vector; } }
-#else
-		public Vector2 Vector { get { return m_InputDatas[(int)InputType.Move].Vector; } }
-#endif
+		/// <summary> 移動スティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)）のストリーム </summary>
+		public IObservable<Vector2> OnInputLeftStickAsObservable { get { return _OnInputLeftStickAsObservable.AsObservable(); } }
 
-		/// <summary> カメラスティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)） </summary>
-		public Vector2 CameraVector { get { return m_InputDatas[(int)InputType.Camera].Vector; } }
+		private Subject<Vector2> _OnInputLeftStickAsObservable = new Subject<Vector2>();
+
+		/// <summary> カメラスティックの出力ベクトル（(-1.0f, -1.0f)～(1.0f, 1.0f)）のストリーム </summary>
+		public IObservable<Vector2> OnInputRightStickAsObservable { get { return _OnInputRightStickAsObservable.AsObservable(); } }
+
+		private Subject<Vector2> _OnInputRightStickAsObservable = new Subject<Vector2>();
 
 		//public Vector2 ClickPosition { get; private set; }
 
@@ -59,7 +60,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			}
 
 #if UNITY_EDITOR
+			// マウスの左ボタン、右ボタン用
 			m_InputDatas.Add(-1, new InputData(Vector2.zero));
+			m_InputDatas.Add(-2, new InputData(Vector2.zero));
 #endif
 		}
 
@@ -77,10 +80,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 				return;
 			}
 
+			// タップ座標を取得
 			Vector3 pos = transform.InverseTransformPoint(eventData.position);
 			if(m_InputDatas.ContainsKey(pointerId))
 			{
-				m_InputDatas[pointerId].PressPosition = (pos);
+				m_InputDatas[pointerId].PressPosition = pos;
 			}
 
 			//Debug.Log(string.Format("down - [{0}]-[{1}]", pointerId, pos));
@@ -100,12 +104,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 
 			Vector2 pos = transform.InverseTransformPoint(eventData.position);
 
-			// 押下開始座標からの距離を求め、スティックが半径の範囲を超えないように調整
+			// タップ開始座標からの距離を求め、スティックが半径の範囲を超えないように調整
 			Vector2 subtract = pos - m_InputDatas[pointerId].PressPosition;
 			pos = new Vector3(Mathf.Clamp(subtract.x, -m_RadiusHalf, m_RadiusHalf), Mathf.Clamp(subtract.y, -m_RadiusHalf, m_RadiusHalf));
 
-			// 入力ベクトルを正規化
-			m_InputDatas[pointerId].Vector = pos.normalized;
+			// 入力ベクトルを正規化し、入力ストリームに流す
+			UpdateStream(pointerId, pos.normalized);
 			//Debug.Log(string.Format("drag [{0}]-[{1}]{2}", pointerId, pos, m_InputDatas[pointerId]));
 		}
 
@@ -120,6 +124,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			if(m_InputDatas.ContainsKey(pointerId))
 			{
 				m_InputDatas[pointerId].Reset();
+
+				// 入力ストリームに流す
+				UpdateStream(pointerId, Vector2.zero);
 				//Debug.Log(string.Format("up - [{0}]", pointerId));
 			}
 		}
@@ -134,6 +141,29 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 		private bool IsInputOver(PointerEventData eventData)
 		{
 			return (eventData.pointerId >= 2);
+		}
+
+		private void UpdateStream(int pointerId, Vector2 vec)
+		{
+			if(pointerId == (int)InputType.Move)
+			{
+				_OnInputLeftStickAsObservable.OnNext(vec);
+			}
+			else if(pointerId == (int)InputType.Camera)
+			{
+				_OnInputRightStickAsObservable.OnNext(vec);
+			}
+
+#if UNITY_EDITOR
+			if(pointerId == -1)
+			{
+				_OnInputLeftStickAsObservable.OnNext(vec);
+			}
+			else if(pointerId == -2)
+			{
+				_OnInputRightStickAsObservable.OnNext(vec);
+			}
+#endif
 		}
 
 		#region InputType
@@ -160,8 +190,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 		{
 			public Vector2 PressPosition = Vector2.zero;
 
-			public Vector2 Vector = Vector2.zero;
-
 			public InputData(Vector2 pressPosition)
 			{
 				this.PressPosition = pressPosition;
@@ -170,12 +198,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			public void Reset()
 			{
 				this.PressPosition = Vector2.zero;
-				this.Vector = Vector2.zero;
 			}
 
 			public override string ToString()
 			{
-				return string.Format("[{0}]\nVector=[{1}]", PressPosition, Vector);
+				return string.Format("PressPosition=[{0}]", PressPosition);
 			}
 		}
 

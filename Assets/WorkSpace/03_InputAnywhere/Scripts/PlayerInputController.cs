@@ -1,70 +1,22 @@
-﻿using UnityEngine;
+﻿using UniRx;
+using UnityEngine;
 
 namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 {
 	public class PlayerInputController : MonoBehaviour
 	{
-		[SerializeField]
-		private bool m_UseStick = true;
-
-		/// <summary> 左スティック </summary>
+		/// <summary> スティック入力 </summary>
 		[SerializeField]
 		private InputStickObject m_InputStick = null;
 
-		public float GetAxisHorizontal()
-		{
-			float result = 0f;
+		/// <summary>
+		/// 左スティック入力のストリーム
+		/// </summary>
+		public IObservable<Vector2> OnInputLeftStickAsObservable { get { return m_InputStick.OnInputLeftStickAsObservable; } }
 
-#if UNITY_EDITOR
-			if(m_UseStick) result = m_InputStick.Vector.x;
-			else result = Input.GetAxis("Horizontal"); 
-#else
-			result = m_InputStick.Vector.x;
-#endif
-
-			return result;
-		}
-
-		public float GetAxisVertical()
-		{
-			float result = 0f;
-
-#if UNITY_EDITOR
-			if(m_UseStick) result = m_InputStick.Vector.y;
-			else result = Input.GetAxis("Vertical"); 
-#else
-			result = m_InputStick.Vector.y;
-#endif
-
-			return result;
-		}
-
-		public float GetCameraAxisHorizontal()
-		{
-			float result = 0f;
-
-#if UNITY_EDITOR
-			if(m_UseStick) result = m_InputStick.CameraVector.x;
-			else result = (Input.GetMouseButton(1) ? Input.GetAxis("Mouse X") : 0f);
-#else
-			result = m_InputStick.CameraVector.x;
-#endif
-
-			return result;
-		}
-
-		public float GetCameraAxisVertical()
-		{
-			float result = 0f;
-
-#if UNITY_EDITOR
-			if(m_UseStick) result = m_InputStick.CameraVector.y;
-			else result = (Input.GetMouseButton(1) ? Input.GetAxis("Mouse Y") : 0f);
-#else
-			result = m_InputStick.CameraVector.y;
-#endif
-
-			return result;
-		}
+		/// <summary>
+		/// 右（カメラ）スティック入力のストリーム
+		/// </summary>
+		public IObservable<Vector2> OnInputRightStickAsObservable { get { return m_InputStick.OnInputRightStickAsObservable; } }
 	}
 }

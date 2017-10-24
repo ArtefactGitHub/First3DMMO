@@ -26,11 +26,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			m_Rigidbody = GetComponent<Rigidbody>();
 			m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
-			// Update()
-			this.UpdateAsObservable().Subscribe(_ =>
+			// 左スティック入力
+			m_Input.OnInputLeftStickAsObservable.Subscribe(inputVec =>
 			{
-				m_InputVec.x = m_Input.GetAxisHorizontal();
-				m_InputVec.z = m_Input.GetAxisVertical();
+				m_InputVec.x = inputVec.x;
+				m_InputVec.z = inputVec.y;
 			}).AddTo(this);
 
 			// FixedUpdate()
