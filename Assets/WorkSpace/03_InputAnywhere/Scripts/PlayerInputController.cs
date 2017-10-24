@@ -14,7 +14,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 
 		/// <summary> 左スティック </summary>
 		[SerializeField]
-		private InputStickObject m_LeftStick = null;
+		private InputStickObject m_InputStick = null;
 
 		///// <summary> 右スティック </summary>
 		//[SerializeField]
@@ -36,10 +36,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			float result = 0f;
 
 #if UNITY_EDITOR
-			if(m_UseStick) result = m_LeftStick.Vector.x;
+			if(m_UseStick) result = m_InputStick.Vector.x;
 			else result = Input.GetAxis("Horizontal"); 
 #else
-			result = m_LeftStick.Vector.x;
+			result = m_InputStick.Vector.x;
 #endif
 
 			return result;
@@ -50,10 +50,38 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 			float result = 0f;
 
 #if UNITY_EDITOR
-			if(m_UseStick) result = m_LeftStick.Vector.y;
+			if(m_UseStick) result = m_InputStick.Vector.y;
 			else result = Input.GetAxis("Vertical"); 
 #else
-			result = m_LeftStick.Vector.y;
+			result = m_InputStick.Vector.y;
+#endif
+
+			return result;
+		}
+
+		public float GetCameraAxisHorizontal()
+		{
+			float result = 0f;
+
+#if UNITY_EDITOR
+			if(m_UseStick) result = m_InputStick.CameraVector.x;
+			else result = Input.GetAxis("Mouse X");
+#else
+			result = m_InputStick.CameraVector.x;
+#endif
+
+			return result;
+		}
+
+		public float GetCameraAxisVertical()
+		{
+			float result = 0f;
+
+#if UNITY_EDITOR
+			if(m_UseStick) result = m_InputStick.CameraVector.y;
+			else result = Input.GetAxis("Mouse Y");
+#else
+			result = m_InputStick.CameraVector.y;
 #endif
 
 			return result;
