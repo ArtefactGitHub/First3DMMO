@@ -1,5 +1,6 @@
-﻿using com.Artefact.First3DMMO.WorkSpace.InputStick;
-using UnityEngine;
+﻿using UnityEngine;
+using UniRx;
+using UniRx.Triggers;
 
 namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 {
@@ -7,45 +8,52 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 	public class PlayerController : MonoBehaviour
 	{
 		[SerializeField]
-		private float Movement = 500f;
-
-		[SerializeField]
-		private float RotateSpeed = 10f;
-
-		[SerializeField]
-		private float BoostMoveRatio = 2.0f;
+		private float m_Speed = 10f;
 
 		/// <summary> 入力管理クラス </summary>
 		[SerializeField]
 		private PlayerInputController m_Input = null;
 
-		private Vector3 m_VecMove = Vector3.zero;
+		private Vector3 m_InputVec = Vector3.zero;
 
-		private Rigidbody m_Rigidbody;
+		private Vector3 m_CalcVec = Vector3.zero;
+
+		private Rigidbody m_Rigidbody = null;
 
 		void Start()
 		{
-			m_Rigidbody = GetComponent<Rigidbody>();
 			// 回転しないようにする
+			m_Rigidbody = GetComponent<Rigidbody>();
 			m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-		}
 
-		void Update()
-		{
-			m_VecMove.x = m_Input.GetAxisHorizontal() * Time.deltaTime * Movement * (m_Input.IsBoost ? BoostMoveRatio : 1.0f);
-			m_VecMove.z = m_Input.GetAxisVertical() * Time.deltaTime * Movement * (m_Input.IsBoost ? BoostMoveRatio : 1.0f);
-
-			if(m_VecMove.magnitude > 0.01f)
+			// Update()
+			this.UpdateAsObservable().Subscribe(_ =>
 			{
-				float rotateDelta = RotateSpeed * Time.deltaTime;
-				Quaternion quaterninon = Quaternion.LookRotation(m_VecMove);
-				transform.rotation = Quaternion.Lerp(transform.rotation, quaterninon, rotateDelta);
-			}
-		}
+				m_InputVec.x = m_Input.GetAxisHorizontal();
+				m_InputVec.z = m_Input.GetAxisVertical();
+			}).AddTo(this);
 
-		void FixedUpdate()
-		{
-			m_Rigidbody.velocity = m_VecMove;
+			// FixedUpdate()
+			this.FixedUpdateAsObservable().Subscribe(_ =>
+			{
+				// カメラの進行方向ベクトル
+				m_CalcVec.Set(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
+				Vector3 cameraForward = m_CalcVec.normalized;
+
+				// カメラと前方ベクトルとの角度を求める
+				// 前方ベクトルを向いている場合 0 となる（-180.0f <= 0 <= 180.0f の範囲）
+				float angle = Vector3.Angle(Vector3.forward, cameraForward) * (cameraForward.x < 0f ? -1.0f : 1f);
+
+				// 角度分、入力ベクトルを回転させる
+				var moveVec = Quaternion.AngleAxis(angle, Vector3.up) * m_InputVec;
+
+				m_Rigidbody.velocity = moveVec * m_Speed;
+
+				if(moveVec != Vector3.zero)
+				{
+					transform.rotation = Quaternion.LookRotation(moveVec);
+				}
+			}).AddTo(this);
 		}
 	}
 }
