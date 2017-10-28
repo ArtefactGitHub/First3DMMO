@@ -4,20 +4,20 @@ using System.Collections;
 using UniRx;
 using UnityEngine;
 
-namespace com.Artefact.First3DMMO.WorkSpace.ConnectNetwork
+namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 {
-	public class SampleNetworkManager : MonoBehaviour
+	public class NetworkManager : MonoBehaviour
 	{
 		#region singleton
-		private static SampleNetworkManager _Instance = null;
+		private static NetworkManager _Instance = null;
 
-		public static SampleNetworkManager Instance
+		public static NetworkManager Instance
 		{
 			get
 			{
 				if(_Instance == null)
 				{
-					_Instance = FindObjectOfType<SampleNetworkManager>();
+					_Instance = FindObjectOfType<NetworkManager>();
 				}
 				return _Instance;
 			}
@@ -40,22 +40,24 @@ namespace com.Artefact.First3DMMO.WorkSpace.ConnectNetwork
 
 		public void OnOpen()
 		{
-			Log("SampleNetworkManager.OnOpen()");
+			Log("NetworkManager.OnOpen()");
 		}
 
 		public void OnMessage(IMessageData message)
 		{
-			Log("SampleNetworkManager.OnMessage()\n" + message);
+			Log("NetworkManager.OnMessage()\n" + message.ToString());
+
+			PushMessageManager.Instance.OnMessage(message);
 		}
 
 		public void OnError(string message)
 		{
-			Log("SampleNetworkManager.OnError()\n" + message);
+			Log("NetworkManager.OnError()\n" + message.ToString());
 		}
 
 		public void OnClose()
 		{
-			Log("SampleNetworkManager.OnClose()");
+			Log("NetworkManager.OnClose()");
 		}
 
 		private void Log(string str)

@@ -3290,7 +3290,7 @@ GameObject:
   - component: {fileID: 2080517227}
   - component: {fileID: 2080517226}
   m_Layer: 0
-  m_Name: SampleController
+  m_Name: SceneController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3317,7 +3317,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2080517225}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8f7556a5ff393f3469c7e0dc768f06e0, type: 3}
+  m_Script: {fileID: 11500000, guid: e4061bd0866d60f46919dbb149ddf97e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!114 &2080517228

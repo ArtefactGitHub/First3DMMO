@@ -1,14 +1,12 @@
 ﻿using com.Artefact.First3DMMO.WorkSpace.ConnectNetwork;
-using com.Artefact.First3DMMO.WorkSpace.ConnectNetwork.Views;
+using com.Artefact.FrameworkNetwork.Cores;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
 
 namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 {
-	public class SampleSceneController : MonoBehaviour
+	public class SceneController : MonoBehaviour
 	{
 		[SerializeField]
 		private bool IsPlayerPrefsClear = true;
@@ -37,9 +35,17 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 				SamplePlayerPrefs.DeleteAll();
 			}
 
+			// サーバーからの直接メッセージ受信
+			PushMessageManager.Instance.PushMessageAsObservable.Subscribe(messageData => SyncPlayer(messageData)).AddTo(this);
+
 			InitializeStage();
 
 			InitializeNetwork();
+		}
+
+		private void SyncPlayer(IMessageData message)
+		{
+			Debug.Log("sync : " + message.Result);
 		}
 
 		private void InitializeStage()
@@ -53,7 +59,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 
 		private void InitializeNetwork()
 		{
-			Observable.FromCoroutine<Exception>(observer => SampleNetworkManager.Instance.Initialize(observer, SampleDefine.EndPoint))
+			Observable.FromCoroutine<Exception>(observer => NetworkManager.Instance.Initialize(observer, SampleDefine.EndPoint))
 				.Subscribe(ex =>
 				{
 					// エラーの場合、エラーメッセージを表示する
