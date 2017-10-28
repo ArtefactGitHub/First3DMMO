@@ -44,14 +44,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 		[SerializeField, Tooltip("スティックの移動可能距離（半径）")]
 		private float m_Radius = 200.0f;
 
-		private float m_RadiusHalf = 0f;
-
 		private Dictionary<int, InputData> m_InputDatas = new Dictionary<int, InputData>();
 
 		private void Start()
 		{
-			m_RadiusHalf = m_Radius / 2.0f;
-
 			// 入力情報の生成
 			int max = Enum.GetValues(typeof(InputType)).Length;
 			for(int i = 0; i < max; i++)
@@ -104,12 +100,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere
 
 			Vector2 pos = transform.InverseTransformPoint(eventData.position);
 
-			// タップ開始座標からの距離を求め、スティックが半径の範囲を超えないように調整
+			// タップ開始座標からの距離を求める
 			Vector2 subtract = pos - m_InputDatas[pointerId].PressPosition;
-			pos = new Vector3(Mathf.Clamp(subtract.x, -m_RadiusHalf, m_RadiusHalf), Mathf.Clamp(subtract.y, -m_RadiusHalf, m_RadiusHalf));
+			// スティック入力範囲上の割合を求める
+			Vector2 distance = subtract / m_Radius;
 
-			// 入力ベクトルを正規化し、入力ストリームに流す
-			UpdateStream(pointerId, pos.normalized);
+			// -1.0～1.0f に値を丸め、入力ストリームに流す
+			pos = new Vector3(Mathf.Clamp(distance.x, -1.0f, 1.0f), Mathf.Clamp(distance.y, -1.0f, 1.0f));
+			UpdateStream(pointerId, pos);
 			//Debug.Log(string.Format("drag [{0}]-[{1}]{2}", pointerId, pos, m_InputDatas[pointerId]));
 		}
 
