@@ -30,3 +30,6 @@ sysinfo.txt
 Assets/Framework_Cl_WebSocket*
 ws.log
 
+# Config
+Assets/Resources/Config/~*
+
