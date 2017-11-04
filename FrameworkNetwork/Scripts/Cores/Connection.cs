@@ -87,7 +87,18 @@ namespace com.Artefact.FrameworkNetwork.Cores
 			}
 			_ConnectionParam = param;
 
-			m_Socket = new WebSocket(param.EndPoint);
+			try
+			{
+				m_Socket = new WebSocket(param.EndPoint);
+			}
+			catch(Exception e)
+			{
+				observer.OnNext(new Exception("Create WebSocket Error\n" + e.Message));
+				observer.OnCompleted();
+				yield break;
+			}
+
+			Debug.Log("EndPoint = " + param.EndPoint);
 
 #if DEBUG
 			m_Socket.Log.Level = LogLevel.Info;
@@ -162,7 +173,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				MessageData messageData = GetPushMessageData();
 				if(messageData != null)
 				{
-					_ConnectionParam.OnMessage(messageData.Result.ToString());
+					_ConnectionParam.OnMessage(messageData);
 
 					_MessageDataQueues.Remove(messageData);
 				}

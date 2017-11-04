@@ -43,7 +43,7 @@ namespace com.Artefact.FrameworkNetwork.Samples
 			Log("SampleNetworkManager.OnOpen()");
 		}
 
-		public void OnMessage(string message)
+		public void OnMessage(IMessageData message)
 		{
 			Log("SampleNetworkManager.OnMessage()\n" + message);
 		}

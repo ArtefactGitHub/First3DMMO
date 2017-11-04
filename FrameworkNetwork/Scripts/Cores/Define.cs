@@ -12,13 +12,13 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 		public Action OnOpen { get; set; }
 
-		public Action<string> OnMessage { get; set; }
+		public Action<IMessageData> OnMessage { get; set; }
 
 		public Action<string> OnError { get; set; }
 
 		public Action OnClose { get; set; }
 
-		public ConnectionParameter(string endPoint, Action onOpen, Action<string> onMessage, Action<string> onError, Action onClose)
+		public ConnectionParameter(string endPoint, Action onOpen, Action<IMessageData> onMessage, Action<string> onError, Action onClose)
 		{
 			this.EndPoint = endPoint;
 			this.OnOpen = onOpen;
@@ -44,9 +44,13 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 	public interface IMessageData
 	{
+		string CommandName { get; }
+
 		string ExceptionMessage { get; }
 
 		JObject Result { get; }
+
+		bool IsPushMessage { get; }
 	}
 
 	[JsonObject]
@@ -68,20 +72,26 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		{
 			return !string.IsNullOrEmpty(CommandName);
 		}
-	}
 
-	public class MessageDataException : IMessageData
-	{
-		public string ExceptionMessage { get; private set; }
-
-		public JObject Result { get; private set; }
-
-		public MessageDataException(string exceptionMessage, JObject result)
+		public override string ToString()
 		{
-			this.ExceptionMessage = exceptionMessage;
-			this.Result = result;
+			return string.Format("CommandName=[{0}] ExceptionMessage=[{1}] Result=[{2}] IsPushMessage=[{3}]",
+				CommandName, ExceptionMessage, Result, IsPushMessage);
 		}
 	}
+
+	//public class MessageDataException : IMessageData
+	//{
+	//	public string ExceptionMessage { get; private set; }
+
+	//	public JObject Result { get; private set; }
+
+	//	public MessageDataException(string exceptionMessage, JObject result)
+	//	{
+	//		this.ExceptionMessage = exceptionMessage;
+	//		this.Result = result;
+	//	}
+	//}
 
 	#endregion
 }
