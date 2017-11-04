@@ -1,8 +1,11 @@
 ﻿using com.Artefact.First3DMMO.WorkSpace.ConnectNetwork;
 using com.Artefact.FrameworkNetwork.Cores;
 using System;
+using System.Collections.Generic;
 using UniRx;
 using UnityEngine;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 {
@@ -43,9 +46,32 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 			InitializeNetwork();
 		}
 
+		private List<ResponseSyncPlayer> m_Players = new List<ResponseSyncPlayer>();
+
 		private void SyncPlayer(IMessageData message)
 		{
-			Debug.Log("sync : " + message.Result);
+			Debug.Log(string.Format("[{0}] : {1}", message.CommandName, message.Result));
+
+			if(message.CommandName.Equals("syncPlayer"))
+			{
+				ResponseSyncPlayer player = new ResponseSyncPlayer();
+				player.TryParse(message.Result);
+
+				m_Players.Add(player);
+			}
+			else if(message.CommandName.Equals("disconnectPlayer"))
+			{
+				ResponseSyncPlayer player = new ResponseSyncPlayer();
+				player.TryParse(message.Result);
+
+				foreach(var x in m_Players)
+				{
+					if(x.PlayerIndex == player.PlayerIndex)
+					{
+						m_Players.Remove(player);
+					}
+				}
+			}
 		}
 
 		private void InitializeStage()
@@ -59,7 +85,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 
 		private void InitializeNetwork()
 		{
-			Observable.FromCoroutine<Exception>(observer => NetworkManager.Instance.Initialize(observer, SampleDefine.EndPoint))
+			Observable.FromCoroutine<Exception>(observer => NetworkManager.Instance.Initialize(observer, GetEndpoint()))
 				.Subscribe(ex =>
 				{
 					// エラーの場合、エラーメッセージを表示する
@@ -72,6 +98,38 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 					Debug.Log("connect success");
 
 				}).AddTo(this);
+		}
+
+		/// <summary>
+		/// 接続先の取得
+		/// 
+		/// 接続先設定用JSONファイルが存在する場合、下記パラメータを取得します。
+		/// 存在しない場合、デフォルトの値を返します。
+		/// 　・"host" : 接続先URL
+		/// 　・"port" : 接続先ポート番号
+		/// </summary>
+		/// <returns></returns>
+		private string GetEndpoint()
+		{
+			string result = "";
+
+			TextAsset asset = Resources.Load<TextAsset>("Config/~ServerSettings");
+			if(asset != null)
+			{
+				try
+				{
+					JObject obj = JObject.Parse(asset.text);
+					result = string.Format("{0}:{1}", obj["host"], obj["port"]);
+				}
+				catch(Exception e)
+				{
+					Debug.LogWarning("can not parse ServerSettings");
+				}
+
+				Debug.Log(string.Format("loaded ServerSettings=[{0}]", result ?? ""));
+			}
+
+			return (string.IsNullOrEmpty(result) ? SampleDefine.EndPoint : result);
 		}
 	}
 }

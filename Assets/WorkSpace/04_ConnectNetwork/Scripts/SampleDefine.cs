@@ -5,8 +5,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ConnectNetwork
 {
 	public static class SampleDefine
 	{
-		//public static readonly string EndPoint = "ws://my-nodejs-app-artefactcloud.c9users.io/";
-		//public static readonly string EndPoint = "ws://127.0.0.1:3000";
 		public static readonly string EndPoint = "ws://localhost:8080";
 
 		public static readonly string KeyUserName = "userName";
