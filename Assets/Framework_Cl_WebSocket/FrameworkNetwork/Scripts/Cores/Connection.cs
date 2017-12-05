@@ -89,6 +89,7 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 			try
 			{
+				Debug.LogFormat("ConnectProcess EndPoint=[{0}]", param.EndPoint);
 				m_Socket = new WebSocket(param.EndPoint);
 			}
 			catch(Exception e)
@@ -97,8 +98,6 @@ namespace com.Artefact.FrameworkNetwork.Cores
 				observer.OnCompleted();
 				yield break;
 			}
-
-			Debug.Log("EndPoint = " + param.EndPoint);
 
 #if DEBUG
 			m_Socket.Log.Level = LogLevel.Info;
@@ -129,6 +128,11 @@ namespace com.Artefact.FrameworkNetwork.Cores
 
 		public IObservable<IMessageData> Send(JObject obj, string commandName)
 		{
+			if(!m_Socket.IsAlive)
+			{
+				return Observable.Return<IMessageData>(new MessageDataException("Socket is not alive"));
+			}
+
 			m_Socket.Send(obj.ToString());
 
 			// ユーザーコマンドに対する受信を非同期で待ち、IMessageData の形で返す
