@@ -1,11 +1,12 @@
 ﻿using com.Artefact.First3DMMO.WorkSpace.ConnectNetwork;
+using com.Artefact.First3DMMO.WorkSpace.InputStickAnywhere;
 using com.Artefact.FrameworkNetwork.Cores;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniRx;
 using UnityEngine;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 {
@@ -38,6 +39,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 				SamplePlayerPrefs.DeleteAll();
 			}
 
+			m_PlayerController = FindObjectOfType<PlayerController>();
+
 			// サーバーからの直接メッセージ受信
 			PushMessageManager.Instance.PushMessageAsObservable.Subscribe(messageData => SyncPlayer(messageData)).AddTo(this);
 
@@ -46,32 +49,122 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 			InitializeNetwork();
 		}
 
-		private List<ResponseSyncPlayer> m_Players = new List<ResponseSyncPlayer>();
+		private PlayerController m_PlayerController = null;
+
+		private int PlayerIndex { get; set; }
+
+		private List<ISyncPlayerData> m_Players = new List<ISyncPlayerData>();
+
+		[SerializeField]
+		private GameObject m_PrefabPlayerObject = null;
+
+		private List<PlayerObject> m_PlayerObjects = new List<PlayerObject>();
+
+		private void AddPlayer(List<ISyncPlayerData> addPlayerDatas)
+		{
+			foreach(var data in addPlayerDatas)
+			{
+				if(!m_Players.Any(x => x.PlayerIndex == data.PlayerIndex) && data.PlayerIndex != PlayerIndex)
+				{
+					m_Players.Add(data);
+
+					PlayerObject obj = Instantiate(m_PrefabPlayerObject, Vector3.zero, Quaternion.identity).GetComponent<PlayerObject>();
+					obj.Initialize(data);
+
+					m_PlayerObjects.Add(obj);
+				}
+			}
+		}
+
+		private void UpdatePlayer(List<ISyncPlayerData> playerDatas)
+		{
+			foreach(var data in playerDatas)
+			{
+				PlayerObject obj = m_PlayerObjects.FirstOrDefault(x => x.PlayerData.PlayerIndex == data.PlayerIndex);
+				if(obj != null)
+				{
+					obj.UpdateData(data);
+				}
+			}
+		}
 
 		private void SyncPlayer(IMessageData message)
 		{
-			Debug.Log(string.Format("[{0}] : {1}", message.CommandName, message.Result));
+			Debug.Log(string.Format("<< [{0}] : {1}", message.CommandName, message.Result));
 
 			if(message.CommandName.Equals("syncPlayer"))
 			{
 				ResponseSyncPlayer player = new ResponseSyncPlayer();
 				player.TryParse(message.Result);
 
-				m_Players.Add(player);
+				AddPlayer(new List<ISyncPlayerData>() { player.SyncPlayerData });
+
+				LogOtherPlayers("syncPlayer");
+			}
+			else if(message.CommandName.Equals("syncOtherPlayers"))
+			{
+				Debug.LogWarningFormat("syncOtherPlayers");
+
+				ResponseSyncOtherPlayers response = new ResponseSyncOtherPlayers();
+				response.TryParse(message.Result);
+
+				// インデックスの取得
+				PlayerIndex = response.PlayerIndex;
+
+				AddPlayer(response.SyncPlayerDatas);
+
+				LogOtherPlayers("syncOtherPlayers");
+			}
+			else if(message.CommandName.Equals("updateOtherPlayers"))
+			{
+				ResponseUpdateOtherPlayers response = new ResponseUpdateOtherPlayers();
+				response.TryParse(message.Result);
+
+				UpdatePlayer(response.SyncPlayerDatas);
+
+				Debug.Log("update");
+				//LogOtherPlayers("updateOtherPlayers");
 			}
 			else if(message.CommandName.Equals("disconnectPlayer"))
 			{
-				ResponseSyncPlayer player = new ResponseSyncPlayer();
-				player.TryParse(message.Result);
+				Debug.LogWarningFormat("disconnectPlayer");
 
-				foreach(var x in m_Players)
+				ResponseSyncPlayer response = new ResponseSyncPlayer();
+				response.TryParse(message.Result);
+
+				RemovePlayer(response.SyncPlayerData);
+
+				LogOtherPlayers("disconnectPlayer");
+			}
+		}
+
+		private void RemovePlayer(ISyncPlayerData playerData)
+		{
+			Debug.LogWarning("RemovePlayer() playerData : " + playerData.ToString());
+
+			ISyncPlayerData data = m_Players.FirstOrDefault(x => x.PlayerIndex == playerData.PlayerIndex);
+			if(data != null)
+			{
+				m_Players.Remove(data);
+
+				PlayerObject targetObj = m_PlayerObjects.FirstOrDefault(obj => obj.PlayerData.PlayerIndex == playerData.PlayerIndex);
+				if(targetObj != null)
 				{
-					if(x.PlayerIndex == player.PlayerIndex)
-					{
-						m_Players.Remove(player);
-					}
+					m_PlayerObjects.Remove(targetObj);
+
+					Destroy(targetObj.gameObject);
 				}
 			}
+		}
+
+		private void LogOtherPlayers(string title = "")
+		{
+			string s = string.Format("=== {0} ===\n", title);
+			foreach(var x in m_Players)
+			{
+				s += string.Format("[{0}]\n", x.ToString());
+			}
+			Debug.Log(s);
 		}
 
 		private void InitializeStage()
@@ -95,9 +188,29 @@ namespace com.Artefact.First3DMMO.WorkSpace.SyncPlayer
 						return;
 					}
 
-					Debug.Log("connect success");
+					Debug.Log("InitializeNetwork() success");
+
+					SetConnectUpdatePosition();
 
 				}).AddTo(this);
+		}
+
+		private void SetConnectUpdatePosition()
+		{
+			PlayerModule playerModule = new PlayerModule();
+			Observable.IntervalFrame(3).Subscribe(_ =>
+			{
+				SyncPlayerData data = new SyncPlayerData();
+				data.Setup(PlayerIndex, m_PlayerController.transform.position.x, m_PlayerController.transform.position.z);
+
+				playerModule.UpdatePosition(data).Subscribe(result =>
+				{
+					if(result.Exception != null)
+					{
+						SampleErrorManager.Instance.SetMessage(result.Exception.Message);
+					}
+				}).AddTo(this);
+			}).AddTo(this);
 		}
 
 		/// <summary>

@@ -3338,6 +3338,8 @@ MonoBehaviour:
   m_SpawnCount: 100
   m_SpawnLeftFar: {x: -90, y: 0, z: 90}
   m_SpawnRightNear: {x: 90, y: 0, z: -90}
+  m_PrefabPlayerObject: {fileID: 1384601163220878, guid: 82a1e51a8901d9042a554460942f9139,
+    type: 2}
 --- !u!4 &2080517229
 Transform:
   m_ObjectHideFlags: 0

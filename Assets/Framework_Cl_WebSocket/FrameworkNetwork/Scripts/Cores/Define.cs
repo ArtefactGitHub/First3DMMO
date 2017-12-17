@@ -80,18 +80,21 @@ namespace com.Artefact.FrameworkNetwork.Cores
 		}
 	}
 
-	//public class MessageDataException : IMessageData
-	//{
-	//	public string ExceptionMessage { get; private set; }
+	public class MessageDataException : IMessageData
+	{
+		public string CommandName { get; private set; }
 
-	//	public JObject Result { get; private set; }
+		public string ExceptionMessage { get; private set; }
 
-	//	public MessageDataException(string exceptionMessage, JObject result)
-	//	{
-	//		this.ExceptionMessage = exceptionMessage;
-	//		this.Result = result;
-	//	}
-	//}
+		public JObject Result { get; private set; }
+
+		public bool IsPushMessage { get; private set; }
+
+		public MessageDataException(string exceptionMessage)
+		{
+			this.ExceptionMessage = exceptionMessage;
+		}
+	}
 
 	#endregion
 }
