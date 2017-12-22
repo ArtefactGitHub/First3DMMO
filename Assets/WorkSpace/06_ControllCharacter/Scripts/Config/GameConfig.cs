@@ -4,6 +4,6 @@
 	{
         public static readonly int SearchForTargetablePerFrame = 10;
 
-        public static readonly float SearchForTargetableDistanceSqrMagnitude = (20.0f * 20.0f);
+        public static readonly float SearchForTargetableDistanceSqrMagnitude = (40.0f * 40.0f);
 	}
 }

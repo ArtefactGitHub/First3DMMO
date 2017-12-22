@@ -21,7 +21,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private APlayerAnimationController m_AnimationController = null;
 
         /// <summary> 入力管理クラス </summary>
-        private PlayerInputStickManager m_Input = null;
+        private PlayerInputStickManager m_InputStick = null;
+
+        /// <summary> 入力管理クラス </summary>
+        private PlayerInputButtonManager m_InputButton = null;
 
         private Vector3 m_InputVec = Vector3.zero;
 
@@ -40,15 +43,17 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         void Start()
         {
             // 操作管理クラスのインスタンスの取得
-            m_Input = PlayerInputStickManager.Instance;
-            Assert.IsNotNull(m_Input);
+            m_InputStick = PlayerInputController.Instance.InputStickManager;
+            m_InputButton = PlayerInputController.Instance.InputButtonManager;
+            Assert.IsNotNull(m_InputStick);
+            Assert.IsNotNull(m_InputButton);
 
             // 回転しないようにする
             m_Rigidbody = GetComponent<Rigidbody>();
 			m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
 
             // 左スティック入力
-            m_Input.OnInputLeftStickAsObservable.Subscribe(inputVec =>
+            m_InputStick.OnInputLeftStickAsObservable.Subscribe(inputVec =>
 			{
 				m_InputVec.x = inputVec.x;
 				m_InputVec.z = inputVec.y;
@@ -84,23 +89,51 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void InitializeAbility()
         {
+            InitializeSearchForTargetable();
+
+            InitializeTargetLock();
+
+        }
+
+        private void InitializeTargetLock()
+        {
+            m_InputButton.IsTargetLockAsObservable.Subscribe(isLock =>
+            {
+                if (isLock)
+                {
+                    Debug.Log("Lock");
+                }
+                else
+                {
+                    Debug.Log("not Lock");
+                }
+            }).AddTo(this);
+        }
+
+        private void InitializeSearchForTargetable()
+        {
             // 最近接オブジェクト探索
             m_SearchForTargetable.Initialize(GameConfig.SearchForTargetablePerFrame);
             m_SearchForTargetable.Run();
 
             this.ObserveEveryValueChanged(x => x.m_SearchForTargetable.Target)
-                //.Where(target => (target != null && (target.SqrMagnitude < GameConfig.SearchForTargetableDistanceSqrMagnitude)))
                 .Subscribe(target =>
-            {
-            if (target == null)
-            {
-                Debug.Log("- targetable is not found");
-            }
-            else
-            {
-                Debug.Log("- targetable : " + target.name);
-                }
-            }).AddTo(this);
+                {
+                    if (target == null)
+                    {
+                        Debug.Log("- targetable is not found");
+
+                        // ターゲットロックが行えなくなる
+                        m_InputButton.SetEnableTargetLock(false);
+                    }
+                    else
+                    {
+                        Debug.Log("- targetable : " + target.name);
+
+                        // ターゲットロックが行える
+                        m_InputButton.SetEnableTargetLock(true);
+                    }
+                }).AddTo(this);
         }
 
         private void SetAnimationVelocity(Vector2 inputVector)

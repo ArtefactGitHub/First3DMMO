@@ -26,7 +26,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 		private void Start()
         {
             // 操作管理クラスのインスタンスの取得
-            m_Input = PlayerInputStickManager.Instance;
+            m_Input = PlayerInputController.Instance.InputStickManager;
             Assert.IsNotNull(m_Input);
 
             m_TargetPosition = m_Target.transform.position;
