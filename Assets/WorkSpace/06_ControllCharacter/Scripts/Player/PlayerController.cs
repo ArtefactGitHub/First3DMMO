@@ -6,6 +6,7 @@ using UnityEngine.Assertions;
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
 	[RequireComponent(typeof(Rigidbody))]
+	[RequireComponent(typeof(SearchForTargetable))]
 	public class PlayerController : MonoBehaviour
 	{
 		[SerializeField]
@@ -28,7 +29,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
 		private Rigidbody m_Rigidbody = null;
 
-		void Start()
+		private SearchForTargetable m_SearchForTargetable = null;
+
+        private void Awake()
+        {
+            m_SearchForTargetable = GetComponent<SearchForTargetable>();
+            Assert.IsNotNull(m_SearchForTargetable);
+        }
+
+        void Start()
         {
             // 操作管理クラスのインスタンスの取得
             m_Input = PlayerInputStickManager.Instance;
@@ -69,7 +78,30 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 SetAnimationVelocity(m_InputVec);
 
             }).AddTo(this);
-		}
+
+            InitializeAbility();           
+        }
+
+        private void InitializeAbility()
+        {
+            // 最近接オブジェクト探索
+            m_SearchForTargetable.Initialize(GameConfig.SearchForTargetablePerFrame);
+            m_SearchForTargetable.Run();
+
+            this.ObserveEveryValueChanged(x => x.m_SearchForTargetable.Target)
+                //.Where(target => (target != null && (target.SqrMagnitude < GameConfig.SearchForTargetableDistanceSqrMagnitude)))
+                .Subscribe(target =>
+            {
+            if (target == null)
+            {
+                Debug.Log("- targetable is not found");
+            }
+            else
+            {
+                Debug.Log("- targetable : " + target.name);
+                }
+            }).AddTo(this);
+        }
 
         private void SetAnimationVelocity(Vector2 inputVector)
         {
