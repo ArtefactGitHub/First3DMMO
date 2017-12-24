@@ -25,10 +25,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 		{
 			m_SpawnController = ObjectSpawnController.Instance;
 
-			for(int i = 0; i < m_SpawnCount; i++)
-			{
-				m_SpawnController.SpawnRandomArea(m_RootSpawn, m_PrefabSpawn, m_SpawnLeftFar, m_SpawnRightNear);
-			}
-		}
-	}
+            for (int i = 0; i < m_SpawnCount; i++)
+            {
+                m_SpawnController.SpawnRandomArea(m_RootSpawn, m_PrefabSpawn, m_SpawnLeftFar, m_SpawnRightNear);
+            }
+
+            //m_SpawnController.Spawn(m_RootSpawn, m_PrefabSpawn, new Vector3(10.0f, 0f, 10.0f));
+        }
+    }
 }

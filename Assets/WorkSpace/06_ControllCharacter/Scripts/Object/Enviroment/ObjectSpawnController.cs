@@ -9,6 +9,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         List<ATargetable> Targetables { get; }
 
         void SpawnRandomArea(GameObject parent, GameObject prefab, Vector3 position_1, Vector3 position_2);
+
+        void Spawn(GameObject parent, GameObject prefab, Vector3 position);
     }
 
     public class ObjectSpawnController : MonoBehaviour, IObjectSpawnController
@@ -39,7 +41,21 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             Targetables = new List<ATargetable>();
         }
 
-		public void SpawnRandomArea(GameObject parent, GameObject prefab, Vector3 leftFar, Vector3 rightNear)
+        public void Spawn(GameObject parent, GameObject prefab, Vector3 position)
+        {
+            GameObject go = Instantiate(prefab, position, Quaternion.identity);
+            go.name = string.Format(m_NameFormat, Targetables.Count);
+
+            go.transform.SetParent(parent.transform, false);
+
+            var targetable = go.GetComponent<ATargetable>();
+            if (targetable != null)
+            {
+                Targetables.Add(targetable);
+            }
+        }
+
+        public void SpawnRandomArea(GameObject parent, GameObject prefab, Vector3 leftFar, Vector3 rightNear)
 		{
 			Assert.IsNotNull(prefab);
 

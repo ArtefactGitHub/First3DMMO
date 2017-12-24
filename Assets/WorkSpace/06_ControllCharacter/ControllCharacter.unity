@@ -348,7 +348,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a88eea5394ba6d642891f998794d1bb8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Target: {fileID: 1774080229}
+  m_Target: {fileID: 805498698}
+  m_PositionOffset: {x: 0, y: 5, z: -15}
   m_RotateSpeed: 50
   m_RollupSpeed: 20
 --- !u!1 &309878204
@@ -752,6 +753,12 @@ GameObject:
   m_PrefabParentObject: {fileID: 1265182186342638, guid: 1111f5ecc532ece4facefe31f7f744e3,
     type: 2}
   m_PrefabInternal: {fileID: 2033375930}
+--- !u!114 &805498698 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114763530310356488, guid: 1111f5ecc532ece4facefe31f7f744e3,
+    type: 2}
+  m_PrefabInternal: {fileID: 2033375930}
+  m_Script: {fileID: 11500000, guid: b881ff009a7c9a249a36a8b622f8574c, type: 3}
 --- !u!114 &805498701
 MonoBehaviour:
   m_ObjectHideFlags: 0
