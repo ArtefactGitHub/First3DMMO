@@ -33,5 +33,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         /// <summary> ボタン入力 </summary>
         [SerializeField]
         private PlayerInputButtonManager m_InputButtonManager = null;
+
+        public void Initialize()
+        {
+            InputStickManager.Initialize();
+
+            InputButtonManager.Initialize();
+        }
     }
 }

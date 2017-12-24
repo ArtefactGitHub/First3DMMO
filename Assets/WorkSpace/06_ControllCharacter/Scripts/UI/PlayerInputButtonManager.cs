@@ -30,6 +30,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         public void Initialize()
         {
+            m_ToggleTargetLockObject.Initialize();
         }
 
         public void SetEnableTargetLock(bool isEnable)

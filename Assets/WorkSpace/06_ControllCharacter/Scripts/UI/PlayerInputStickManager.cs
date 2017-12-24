@@ -40,5 +40,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 		/// 右（カメラ）スティック入力のストリーム
 		/// </summary>
 		public IObservable<Vector2> OnInputRightStickAsObservable { get { return m_InputStickForCamera.VectorAsObservable; } }
+
+        public void Initialize()
+        {
+        }
 	}
 }
