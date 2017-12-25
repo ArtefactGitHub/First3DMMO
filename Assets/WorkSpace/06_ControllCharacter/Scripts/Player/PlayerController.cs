@@ -2,6 +2,7 @@
 using UniRx;
 using UniRx.Triggers;
 using UnityEngine.Assertions;
+using System.Collections;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
@@ -10,12 +11,19 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public abstract ATargetable LockObject { get; }
 
         public Vector3 Position { get { return transform.position; } }
+
+        public abstract IEnumerator Initialize(
+            IPlayerInputStickManager inputStickManager, 
+            IPlayerInputButtonManager inputButtonManager,
+            WorldUIManager worldUI);
     }
 
     [RequireComponent(typeof(Rigidbody))]
 	[RequireComponent(typeof(SearchForTargetable))]
 	public class PlayerController : APlayerController
     {
+        #region property
+
         public override ATargetable LockObject { get { return m_LockObj; } }
 
         [SerializeField]
@@ -30,10 +38,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private APlayerAnimationController m_AnimationController = null;
 
         /// <summary> 入力管理クラス </summary>
-        private PlayerInputStickManager m_InputStick = null;
+        private IPlayerInputStickManager m_InputStick = null;
 
         /// <summary> 入力管理クラス </summary>
-        private PlayerInputButtonManager m_InputButton = null;
+        private IPlayerInputButtonManager m_InputButton = null;
+
+        private WorldUIManager m_WorldUI = null;
 
         private Vector3 m_InputVec = Vector3.zero;
 
@@ -47,33 +57,42 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private ATargetable m_LockObj { get; set; }
 
+        #endregion
+
         private void Awake()
         {
             m_SearchForTargetable = GetComponent<SearchForTargetable>();
             Assert.IsNotNull(m_SearchForTargetable);
+
+            m_Rigidbody = GetComponent<Rigidbody>();
+            Assert.IsNotNull(m_Rigidbody);
+            // 回転しないようにする
+            m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
-        void Start()
-        {
-            Assert.IsNotNull(PlayerInputController.Instance);
-            PlayerInputController.Instance.Initialize();
+        #region Initialize
 
+        public override IEnumerator Initialize(
+            IPlayerInputStickManager inputStickManager, 
+            IPlayerInputButtonManager inputButtonManager,
+            WorldUIManager worldUI)
+        {
             // 操作管理クラスのインスタンスの取得
-            m_InputStick = PlayerInputController.Instance.InputStickManager;
-            m_InputButton = PlayerInputController.Instance.InputButtonManager;
+            m_InputStick = inputStickManager;
             Assert.IsNotNull(m_InputStick);
+
+            m_InputButton = inputButtonManager;
             Assert.IsNotNull(m_InputButton);
 
-            // 回転しないようにする
-            m_Rigidbody = GetComponent<Rigidbody>();
-			m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            m_WorldUI = worldUI;
+            Assert.IsNotNull(m_WorldUI);
 
             // 左スティック入力
             m_InputStick.OnInputLeftStickAsObservable.Subscribe(inputVec =>
-			{
-				m_InputVec.x = inputVec.x;
-				m_InputVec.z = inputVec.y;
-			}).AddTo(this);
+            {
+                m_InputVec.x = inputVec.x;
+                m_InputVec.z = inputVec.y;
+            }).AddTo(this);
 
             // FixedUpdate()
             (this).FixedUpdateAsObservable().Subscribe(_ =>
@@ -81,10 +100,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 Move();
             }).AddTo(this);
 
-            InitializeAbility();           
-        }
+            InitializeAbility();
 
-        #region Initialize
+            yield break;
+        }
 
         private void InitializeAbility()
         {
@@ -101,7 +120,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 {
                     Debug.Log("Lock");
 
-                    if(m_SearchForTargetable.Target != null)
+                    if (m_SearchForTargetable.Target != null)
                     {
                         m_LockObj = m_SearchForTargetable.Target;
                     }
@@ -130,8 +149,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                     {
                         Debug.Log("- targetable is not found");
 
-                        // ターゲットロックが行えなくなる
+                        // ターゲットロックを行えないようにする
                         m_InputButton.SetEnableTargetLock(false);
+
+                        // ターゲットマーカーを外す
+                        m_WorldUI.SetTargetMarker(null);
                     }
                     else
                     {
@@ -139,6 +161,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
                         // ターゲットロックが行える
                         m_InputButton.SetEnableTargetLock(true);
+
+                        // ターゲットマーカーを有効にする
+                        m_WorldUI.SetTargetMarker(target);
                     }
                 }).AddTo(this);
         }
