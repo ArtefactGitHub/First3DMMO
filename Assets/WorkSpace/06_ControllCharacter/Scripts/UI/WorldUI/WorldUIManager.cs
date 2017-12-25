@@ -26,14 +26,23 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         [SerializeField]
         private TargetMarkerObject m_TargetMarker = null;
 
+        [SerializeField]
+        private TargetMarkerObject m_LockMarker = null;
+
         public void Initialize()
         {
             m_TargetMarker.Initialize();
+            m_LockMarker.Initialize();
         }
 
         public void SetTargetMarker(ATargetable target)
         {
             m_TargetMarker.SetTarget(target);
+        }
+
+        public void SetLockMarker(ATargetable target)
+        {
+            m_LockMarker.SetTarget(target);
         }
     }
 }

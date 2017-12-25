@@ -13,21 +13,21 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public Vector3 Position { get { return transform.position; } }
 
         public abstract IEnumerator Initialize(
-            IPlayerInputStickManager inputStickManager, 
+            IPlayerInputStickManager inputStickManager,
             IPlayerInputButtonManager inputButtonManager,
             WorldUIManager worldUI);
     }
 
     [RequireComponent(typeof(Rigidbody))]
-	[RequireComponent(typeof(SearchForTargetable))]
-	public class PlayerController : APlayerController
+    [RequireComponent(typeof(SearchForTargetable))]
+    public class PlayerController : APlayerController
     {
         #region property
 
         public override ATargetable LockObject { get { return m_LockObj; } }
 
         [SerializeField]
-		private float m_Speed = 10f;
+        private float m_Speed = 10f;
 
         /// <summary> 入力管理クラス </summary>
         //[SerializeField]
@@ -47,9 +47,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private Vector3 m_InputVec = Vector3.zero;
 
-		private Vector3 m_CalcVec = Vector3.zero;
+        private Vector3 m_CalcVec = Vector3.zero;
 
-		private Rigidbody m_Rigidbody { get; set; }
+        private Rigidbody m_Rigidbody { get; set; }
 
         private SearchForTargetable m_SearchForTargetable { get; set; }
 
@@ -73,7 +73,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         #region Initialize
 
         public override IEnumerator Initialize(
-            IPlayerInputStickManager inputStickManager, 
+            IPlayerInputStickManager inputStickManager,
             IPlayerInputButtonManager inputButtonManager,
             WorldUIManager worldUI)
         {
@@ -123,6 +123,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                     if (m_SearchForTargetable.Target != null)
                     {
                         m_LockObj = m_SearchForTargetable.Target;
+
+                        // ターゲットマーカーを有効にする
+                        m_WorldUI.SetLockMarker(m_LockObj);
                     }
                 }
                 else
@@ -130,6 +133,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                     Debug.Log("not Lock");
 
                     m_LockObj = null;
+
+                    // ターゲットマーカーを外す
+                    m_WorldUI.SetLockMarker(null);
                 }
 
                 m_IsLock = isLock;
