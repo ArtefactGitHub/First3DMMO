@@ -100,10 +100,18 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 Move();
             }).AddTo(this);
 
+            // アクションボタン入力
+            m_InputButton.OnClickActionButton.Subscribe((ActionButtonType buttonType) =>
+            {
+                OnClickActionButton(buttonType);
+            }).AddTo(this);
+
             InitializeAbility();
 
             yield break;
         }
+
+        #region Initialize - inner
 
         private void InitializeAbility()
         {
@@ -175,6 +183,13 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         }
 
         #endregion
+
+        #endregion
+
+        private void OnClickActionButton(ActionButtonType buttonType)
+        {
+            Debug.LogFormat("Action : {0}", buttonType.ToString());
+        }
 
         private void Move()
         {
