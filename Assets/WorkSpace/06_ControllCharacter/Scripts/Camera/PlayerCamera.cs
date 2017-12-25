@@ -22,7 +22,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 		private float m_RollupSpeed = 20.0f;
 
         /// <summary> 入力管理クラス </summary>
-        private PlayerInputStickManager m_Input = null;
+        private IPlayerInputStickManager m_Input = null;
 
         private Vector3 m_TargetPositionLast = Vector3.zero;
 

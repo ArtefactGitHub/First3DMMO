@@ -4,10 +4,19 @@ using UnityEngine.Assertions;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-    public class PlayerInputButtonManager : MonoBehaviour
-	{
+    public interface IPlayerInputButtonManager
+    {
+        IObservable<bool> IsTargetLockAsObservable { get; }
+
+        void Initialize();
+
+        void SetEnableTargetLock(bool isEnable);
+    }
+
+    public class PlayerInputButtonManager : MonoBehaviour, IPlayerInputButtonManager
+    {
         #region singleton
-        public static PlayerInputButtonManager Instance
+        public static IPlayerInputButtonManager Instance
         {
             get
             {

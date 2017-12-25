@@ -4,10 +4,25 @@ using UnityEngine.Assertions;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-	public class PlayerInputStickManager : MonoBehaviour
-	{
+    public interface IPlayerInputStickManager
+    {
+        /// <summary>
+        /// 左スティック入力のストリーム
+        /// </summary>
+        IObservable<Vector2> OnInputLeftStickAsObservable { get; }
+
+        /// <summary>
+        /// 右（カメラ）スティック入力のストリーム
+        /// </summary>
+        IObservable<Vector2> OnInputRightStickAsObservable { get; }
+
+        void Initialize();
+    }
+
+    public class PlayerInputStickManager : MonoBehaviour, IPlayerInputStickManager
+    {
         #region singleton
-        public static PlayerInputStickManager Instance
+        public static IPlayerInputStickManager Instance
         {
             get
             {
