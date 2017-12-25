@@ -973,7 +973,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ImageStick: {fileID: 1688534976}
-  m_Radius: 200
+  m_Radius: 100
 --- !u!1001 &993565009
 Prefab:
   m_ObjectHideFlags: 0
@@ -1957,6 +1957,11 @@ Prefab:
     - target: {fileID: 4547519142124564, guid: 1111f5ecc532ece4facefe31f7f744e3, type: 2}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114763530310356488, guid: 1111f5ecc532ece4facefe31f7f744e3,
+        type: 2}
+      propertyPath: m_Speed
+      value: 20
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1111f5ecc532ece4facefe31f7f744e3, type: 2}
