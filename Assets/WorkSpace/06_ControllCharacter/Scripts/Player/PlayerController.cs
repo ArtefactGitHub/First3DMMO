@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
 using UniRx;
 using UniRx.Triggers;
+using UnityEngine;
 using UnityEngine.Assertions;
-using System.Collections;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
@@ -28,10 +28,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         [SerializeField]
         private float m_Speed = 10f;
-
-        /// <summary> 入力管理クラス </summary>
-        //[SerializeField]
-        //private PlayerInputController m_InputController = null;
 
         /// <summary> アニメーション管理クラス </summary>
         [SerializeField]
