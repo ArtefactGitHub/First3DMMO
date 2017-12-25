@@ -7,36 +7,74 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 	/// </summary>
 	public class PlayerAnimationController : APlayerAnimationController
     {
-        private Dictionary<State, float> m_AnimStateMap = new Dictionary<State, float>()
+        private Dictionary<MoveState, float> m_AnimStateMap = new Dictionary<MoveState, float>()
         {
-            { State.Run, 0.5f }, { State.Walk, 0.1f }, { State.Wait, 0f },
+            { MoveState.Run, 0.5f }, { MoveState.Walk, 0.1f }, { MoveState.Wait, 0f },
         };
 
-        private State m_State = State.Wait;
+        private MoveState m_MoveState = MoveState.Wait;
+
+        private ActionState m_ActionState = ActionState.None;
+
+        #region Attack
+
+        public override void PlayAttack()
+        {
+            if (m_Animator == null)
+            {
+                return;
+            }
+
+            if (m_ActionState == ActionState.None)
+            {
+                m_ActionState = ActionState.Attack;
+                m_Animator.CrossFadeInFixedTime(m_ActionState.ToString(), 0f);
+            }
+        }
+
+        public void EndAttack()
+        {
+            m_ActionState = ActionState.None;
+
+            m_Animator.CrossFadeInFixedTime(MoveState.Wait.ToString(), 0f);
+        }
+
+        #endregion
+
+        #region Move
 
         public override void SetMoveVelocity(float velocity)
         {
-            if (m_Animator != null)
+            if (m_Animator == null)
             {
-                Dictionary<State, float>.KeyCollection keys = m_AnimStateMap.Keys;
-                foreach(var key in keys)
-                {
-                    float targetVelocity = m_AnimStateMap[key];
-                    if (velocity >= targetVelocity)
-                    {
-                        if (m_State != key)
-                        {
-                            m_Animator.CrossFadeInFixedTime(key.ToString(), 0.1f);
-                            m_State = key;
-                        }
+                return;                
+            }
 
-                        break;
+            Dictionary<MoveState, float>.KeyCollection keys = m_AnimStateMap.Keys;
+            foreach (var key in keys)
+            {
+                float targetVelocity = m_AnimStateMap[key];
+                if (velocity >= targetVelocity)
+                {
+                    if (m_MoveState != key)
+                    {
+                        m_Animator.CrossFadeInFixedTime(key.ToString(), 0f);
+                        m_MoveState = key;
                     }
+
+                    break;
                 }
             }
         }
 
-        public enum State
+        #endregion
+        
+        public enum ActionState
+        {
+            None, Attack
+        }
+
+        public enum MoveState
         {
             Wait, Walk, Run
         }

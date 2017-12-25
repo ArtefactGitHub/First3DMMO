@@ -184,7 +184,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void OnClickActionButton(ActionButtonType buttonType)
         {
-            Debug.LogFormat("Action : {0}", buttonType.ToString());
+            m_AnimationController.PlayAttack();
         }
 
         private void Move()
