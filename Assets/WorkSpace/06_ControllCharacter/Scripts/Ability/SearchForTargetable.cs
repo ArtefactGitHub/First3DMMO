@@ -63,12 +63,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
             SortList(m_BaseObject);
 
-            //List<ATargetable> list = ObjectSpawnController.Instance.Targetables;
-            //Vector3 vec = list[0].Position - m_BaseObject.transform.position;
-            //Debug.LogFormat("mag : {0}\n[0].Pos : {1}\nBase.Pos : {2}", vec.sqrMagnitude, list[0].Position, m_BaseObject.transform.position);
-
-            //Target = ObjectSpawnController.Instance.Targetables[0];
-
             var targetObj = ObjectSpawnController.Instance.Targetables[0];
             Target = ((targetObj != null &&
                         CanTargetable(targetObj.SqrMagnitude, GameConfig.SearchForTargetableDistanceSqrMagnitude)) ?
