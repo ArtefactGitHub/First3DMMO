@@ -66,5 +66,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             m_ToggleTargetLockObject.SetEnable(isEnable);
         }
+
+#if UNITY_EDITOR
+        void Update()
+        {
+            if (Input.GetMouseButtonDown(1))
+            {
+                m_OnClickActionButton.OnNext(ActionButtonType.Button_1);
+            }
+        }
+#endif
     }
 }
