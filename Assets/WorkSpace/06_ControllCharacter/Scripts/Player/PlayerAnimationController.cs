@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using UniRx;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-	/// <summary>
+    /// <summary>
     /// comment
-	/// </summary>
-	public class PlayerAnimationController : APlayerAnimationController
+    /// </summary>
+    public class PlayerAnimationController : APlayerAnimationController
     {
+        public override IObservable<ActionState> ActionStateAsObservable { get { return m_ActionStateAsObservable.AsObservable(); } }
+
         private Dictionary<MoveState, float> m_AnimStateMap = new Dictionary<MoveState, float>()
         {
             { MoveState.Run, 0.5f }, { MoveState.Walk, 0.1f }, { MoveState.Wait, 0f },
@@ -15,6 +18,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private MoveState m_MoveState = MoveState.Wait;
 
         private ActionState m_ActionState = ActionState.None;
+
+        private Subject<ActionState> m_ActionStateAsObservable = new Subject<ActionState>();
+
+        private void Start()
+        {
+            this.ObserveEveryValueChanged(x => x.m_ActionState)
+                .Subscribe(actionState => m_ActionStateAsObservable.OnNext(actionState)).AddTo(this);
+        }
 
         #region Attack
 
@@ -25,8 +36,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 return;
             }
 
-            if (m_ActionState == ActionState.None)
+            if (m_ActionState != ActionState.Attack)
             {
+                m_MoveState = MoveState.Wait;
+
                 m_ActionState = ActionState.Attack;
                 m_Animator.CrossFadeInFixedTime(m_ActionState.ToString(), 0f);
             }
@@ -68,15 +81,5 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         }
 
         #endregion
-        
-        public enum ActionState
-        {
-            None, Attack
-        }
-
-        public enum MoveState
-        {
-            Wait, Walk, Run
-        }
     }
 }

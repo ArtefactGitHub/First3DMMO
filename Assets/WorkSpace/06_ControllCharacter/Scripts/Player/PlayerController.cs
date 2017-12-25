@@ -102,6 +102,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 OnClickActionButton(buttonType);
             }).AddTo(this);
 
+            m_AnimationController.ActionStateAsObservable.Subscribe(actionState =>
+            {
+                m_ActionState = actionState;
+            }).AddTo(this);
+
             InitializeAbility();
 
             yield break;
@@ -182,13 +187,32 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         #endregion
 
+        #region Action
+
+        private ActionState m_ActionState { get; set; }
+
+        private bool IsPlayingAttack()
+        {
+            return (m_ActionState == ActionState.Attack);
+        }
+
         private void OnClickActionButton(ActionButtonType buttonType)
         {
             m_AnimationController.PlayAttack();
         }
 
+        #endregion
+
+        #region Move
+
         private void Move()
         {
+            if(IsPlayingAttack())
+            {
+                MoveStop();
+                return;
+            }
+
             // カメラの進行方向ベクトル
             m_CalcVec.Set(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
             Vector3 cameraForward = m_CalcVec.normalized;
@@ -210,6 +234,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             SetAnimationVelocity(m_InputVec);
         }
 
+        private void MoveStop()
+        {
+            m_Rigidbody.velocity = Vector3.zero;
+        }
+
         private void SetAnimationVelocity(Vector2 inputVector)
         {
             var velocity = new Vector3(Mathf.Abs(m_InputVec.x), 0f, Mathf.Abs(m_InputVec.z));
@@ -217,5 +246,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
             m_AnimationController.SetMoveVelocity(inputVelocity);
         }
+
+        #endregion
     }
 }
