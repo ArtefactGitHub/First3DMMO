@@ -1,16 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
 using UniRx;
 using UniRx.Triggers;
-using System.Collections.Generic;
-using System;
+using UnityEngine;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-	/// <summary>
+    /// <summary>
     /// comment
-	/// </summary>
-	public class SearchForTargetable : MonoBehaviour
-	{
+    /// </summary>
+    public class SearchForTargetable : MonoBehaviour
+    {
         [SerializeField]
         private GameObject m_BaseObject = null;
 

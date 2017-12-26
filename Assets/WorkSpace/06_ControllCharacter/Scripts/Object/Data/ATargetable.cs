@@ -2,11 +2,11 @@
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-	/// <summary>
+    /// <summary>
     /// comment
-	/// </summary>
-	public abstract class ATargetable : MonoBehaviour
-	{
+    /// </summary>
+    public abstract class ATargetable : MonoBehaviour
+    {
         public Vector3 Position { get { return gameObject.transform.position; } }
 
         public float SqrMagnitude { get; protected set; }

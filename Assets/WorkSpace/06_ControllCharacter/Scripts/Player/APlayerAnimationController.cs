@@ -7,7 +7,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     /// comment
     /// </summary>
     public abstract class APlayerAnimationController : MonoBehaviour
-	{
+    {
         public abstract IObservable<ActionState> ActionStateAsObservable { get; }
 
         [SerializeField]

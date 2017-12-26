@@ -4,28 +4,28 @@ using UnityEngine.Assertions;
 
 namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
-	public class SceneController : MonoBehaviour
-	{
-		[SerializeField]
-		private GameObject m_RootSpawn = null;
+    public class SceneController : MonoBehaviour
+    {
+        [SerializeField]
+        private GameObject m_RootSpawn = null;
 
-		[SerializeField]
-		private GameObject m_PrefabSpawn = null;
+        [SerializeField]
+        private GameObject m_PrefabSpawn = null;
 
-		[SerializeField, Range(1, 100)]
-		private int m_SpawnCount = 100;
+        [SerializeField, Range(1, 100)]
+        private int m_SpawnCount = 100;
 
-		[SerializeField]
-		private Vector3 m_SpawnLeftFar = new Vector3(-90.0f, 0f, 90.0f);
+        [SerializeField]
+        private Vector3 m_SpawnLeftFar = new Vector3(-90.0f, 0f, 90.0f);
 
-		[SerializeField]
-		private Vector3 m_SpawnRightNear = new Vector3(90.0f, 0f, -90.0f);
+        [SerializeField]
+        private Vector3 m_SpawnRightNear = new Vector3(90.0f, 0f, -90.0f);
 
         [SerializeField]
         private APlayerController m_Player = null;
 
-		private void Start()
-		{
+        private void Start()
+        {
             for (int i = 0; i < m_SpawnCount; i++)
             {
                 ObjectSpawnController.Instance.SpawnRandomArea(m_RootSpawn, m_PrefabSpawn, m_SpawnLeftFar, m_SpawnRightNear);
@@ -38,7 +38,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void Update()
         {
-            if(!m_IsInitialized)
+            if (!m_IsInitialized)
             {
                 Assert.IsNotNull(PlayerInputController.Instance);
                 PlayerInputController.Instance.Initialize();

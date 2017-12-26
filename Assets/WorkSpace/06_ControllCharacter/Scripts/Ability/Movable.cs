@@ -22,20 +22,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private Vector3 m_CalcVec = Vector3.zero;
 
-        private Rigidbody m_Rigidbody = null;
-
         private IDisposable m_Disposable = null;
-
-        private ActionState m_ActionState = ActionState.None;
 
         public void Initialize(
             GameObject baseObject,
-            Rigidbody rigidBody,
             float speed,
             IObservable<Vector2> moveVectorAsObservable)
         {
             this.m_BaseObject = baseObject;
-            this.m_Rigidbody = rigidBody;
             this.m_Speed = speed;
 
             if (moveVectorAsObservable != null)
