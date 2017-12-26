@@ -20,6 +20,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(SearchForTargetable))]
     [RequireComponent(typeof(Movable))]
+    [RequireComponent(typeof(Actionable))]
     public class PlayerController : APlayerController
     {
         #region property
@@ -46,13 +47,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private Vector3 m_InputVec = Vector3.zero;
 
-        private SearchForTargetable m_SearchForTargetable { get; set; }
+        private SearchForTargetable m_SearchForTargetable = null;
 
-        private Movable m_Movable { get; set; }
+        private Movable m_Movable = null;
 
-        private bool m_IsLock { get; set; }
+        private Actionable m_Actionable = null;
 
-        private ATargetable m_LockObj { get; set; }
+        private bool m_IsLock = false;
+
+        private ATargetable m_LockObj = null;
 
         #endregion
 
@@ -63,6 +66,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
             m_Movable = GetComponent<Movable>();
             Assert.IsNotNull(m_Movable);
+
+            m_Actionable = GetComponent<Actionable>();
+            Assert.IsNotNull(m_Actionable);
 
             // 回転しないようにする
             Assert.IsNotNull(m_Rigidbody);
@@ -95,12 +101,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 m_InputVec.z = inputVec.y;
             }).AddTo(this);
 
-            // アクションボタン入力
-            m_InputButton.OnClickActionButton.Subscribe((ActionButtonType buttonType) =>
-            {
-                OnClickActionButton(buttonType);
-            }).AddTo(this);
-
             m_AnimationController.ActionStateAsObservable.Subscribe(actionState =>
             {
                 m_ActionState = actionState;
@@ -117,10 +117,44 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             InitializeMovable();
 
+            InitializeActionable();
+
             InitializeSearchForTargetable();
 
             InitializeTargetLock();
         }
+
+        #region Action
+
+        private ActionState m_ActionState { get; set; }
+
+        private void InitializeActionable()
+        {
+            // 初期化
+            m_Actionable.Initialize(m_InputButton.OnClickActionButton);
+
+            m_Actionable.ActionParamAsObservable.Subscribe(param =>
+            {
+                OnClickActionButton(param);
+            }).AddTo(this);
+
+            m_Actionable.Run();
+        }
+
+        private bool IsPlayingAttack()
+        {
+            return (m_ActionState == ActionState.Attack);
+        }
+
+        private void OnClickActionButton(ActionParameter actionParameter)
+        {
+            if (actionParameter.ActionType == ActionType.Attack)
+            {
+                m_AnimationController.PlayAttack();
+            }
+        }
+
+        #endregion
 
         #region Movable
 
@@ -129,7 +163,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             // 初期化
             m_Movable.Initialize(
                 gameObject,
-                m_Rigidbody,
                 m_Speed,
                 m_InputStick.OnInputLeftStickAsObservable);
 
@@ -229,22 +262,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         }
 
         #endregion
-
-        #endregion
-
-        #region Action
-
-        private ActionState m_ActionState { get; set; }
-
-        private bool IsPlayingAttack()
-        {
-            return (m_ActionState == ActionState.Attack);
-        }
-
-        private void OnClickActionButton(ActionButtonType buttonType)
-        {
-            m_AnimationController.PlayAttack();
-        }
 
         #endregion
     }
