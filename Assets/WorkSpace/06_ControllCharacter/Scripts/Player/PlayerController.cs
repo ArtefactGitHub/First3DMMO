@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UniRx;
-using UniRx.Triggers;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -28,14 +27,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public override ATargetable LockObject { get { return m_LockObj; } }
 
         [SerializeField]
-        private float m_Speed = 10f;
+        private float m_Speed = 20f;
 
         /// <summary> アニメーション管理クラス </summary>
         [SerializeField]
         private APlayerAnimationController m_AnimationController = null;
 
         [SerializeField]
-        private Rigidbody m_Rigidbody  = null;
+        private Rigidbody m_Rigidbody = null;
 
         /// <summary> 入力管理クラス </summary>
         private IPlayerInputStickManager m_InputStick = null;
@@ -46,8 +45,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private WorldUIManager m_WorldUI = null;
 
         private Vector3 m_InputVec = Vector3.zero;
-
-        private Vector3 m_CalcVec = Vector3.zero;
 
         private SearchForTargetable m_SearchForTargetable { get; set; }
 
@@ -70,6 +67,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             // 回転しないようにする
             Assert.IsNotNull(m_Rigidbody);
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+            Assert.IsNotNull(m_AnimationController);
         }
 
         #region Initialize
@@ -96,12 +95,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 m_InputVec.z = inputVec.y;
             }).AddTo(this);
 
-            // FixedUpdate()
-            (this).FixedUpdateAsObservable().Subscribe(_ =>
-            {
-                //Move();
-            }).AddTo(this);
-
             // アクションボタン入力
             m_InputButton.OnClickActionButton.Subscribe((ActionButtonType buttonType) =>
             {
@@ -122,22 +115,56 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void InitializeAbility()
         {
-            InitializeMovalbe();
+            InitializeMovable();
 
             InitializeSearchForTargetable();
 
             InitializeTargetLock();
         }
 
-        private void InitializeMovalbe()
+        #region Movable
+
+        private void InitializeMovable()
         {
+            // 初期化
             m_Movable.Initialize(
-                gameObject, 
-                m_Rigidbody, 
-                m_AnimationController, 
+                gameObject,
+                m_Rigidbody,
+                m_Speed,
                 m_InputStick.OnInputLeftStickAsObservable);
+
+            // 移動パラメータのストリーム
+            m_Movable.MoveParamAsObservable.Subscribe(param =>
+            {
+                m_Rigidbody.velocity = param.MoveVector;
+
+                if (param.MoveDirection != Vector3.zero)
+                {
+                    transform.rotation = Quaternion.LookRotation(param.MoveDirection);
+                }
+
+                SetMoveVelocityForAnimation(param.MoveDirection);
+            }).AddTo(this);
+
+            // コンポーネント有効化制御
+            this.ObserveEveryValueChanged(x => x.IsPlayingAttack()).Subscribe(isPlayingAttack =>
+            {
+                if (isPlayingAttack) m_Movable.Stop();
+                else m_Movable.Run();
+            }).AddTo(this);
+
             m_Movable.Run();
         }
+
+        private void SetMoveVelocityForAnimation(Vector2 inputVector)
+        {
+            var velocity = new Vector3(Mathf.Abs(inputVector.x), 0f, Mathf.Abs(inputVector.y));
+            var inputVelocity = (velocity.x > velocity.z ? velocity.x : velocity.z);
+
+            m_AnimationController.SetMoveVelocity(inputVelocity);
+        }
+
+        #endregion
 
         private void InitializeTargetLock()
         {
@@ -217,52 +244,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private void OnClickActionButton(ActionButtonType buttonType)
         {
             m_AnimationController.PlayAttack();
-        }
-
-        #endregion
-
-        #region Move
-
-        private void Move()
-        {
-            if (IsPlayingAttack())
-            {
-                MoveStop();
-                return;
-            }
-
-            // カメラの進行方向ベクトル
-            m_CalcVec.Set(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
-            Vector3 cameraForward = m_CalcVec.normalized;
-
-            // カメラと前方ベクトルとの角度を求める
-            // 前方ベクトルを向いている場合 0 となる（-180.0f <= 0 <= 180.0f の範囲）
-            float angle = Vector3.Angle(Vector3.forward, cameraForward) * (cameraForward.x < 0f ? -1.0f : 1f);
-
-            // 角度分、入力ベクトルを回転させる
-            var moveVec = Quaternion.AngleAxis(angle, Vector3.up) * m_InputVec;
-
-            m_Rigidbody.velocity = moveVec * m_Speed;
-
-            if (moveVec != Vector3.zero)
-            {
-                transform.rotation = Quaternion.LookRotation(moveVec);
-            }
-
-            SetAnimationVelocity(m_InputVec);
-        }
-
-        private void MoveStop()
-        {
-            m_Rigidbody.velocity = Vector3.zero;
-        }
-
-        private void SetAnimationVelocity(Vector2 inputVector)
-        {
-            var velocity = new Vector3(Mathf.Abs(m_InputVec.x), 0f, Mathf.Abs(m_InputVec.z));
-            var inputVelocity = (velocity.x > velocity.z ? velocity.x : velocity.z);
-
-            m_AnimationController.SetMoveVelocity(inputVelocity);
         }
 
         #endregion

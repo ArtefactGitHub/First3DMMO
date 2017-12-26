@@ -10,11 +10,13 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     /// </summary>
     public class Movable : AbilityComponent
     {
-        [SerializeField]
-        private float m_Speed = 20f;
+        public IObservable<MoveParameter> MoveParamAsObservable { get { return m_MoveParamAsObservable.AsObservable(); } }
 
-        /// <summary> アニメーション管理クラス </summary>
-        private APlayerAnimationController m_AnimationController = null;
+        private Subject<MoveParameter> m_MoveParamAsObservable = new Subject<MoveParameter>();
+
+        private MoveParameter m_MoveParam = new MoveParameter();
+
+        private float m_Speed = 20f;
 
         private Vector3 m_InputVec = Vector3.zero;
 
@@ -29,12 +31,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public void Initialize(
             GameObject baseObject,
             Rigidbody rigidBody,
-            APlayerAnimationController aPlayerAnimationController,
+            float speed,
             IObservable<Vector2> moveVectorAsObservable)
         {
             this.m_BaseObject = baseObject;
             this.m_Rigidbody = rigidBody;
-            this.m_AnimationController = aPlayerAnimationController;
+            this.m_Speed = speed;
 
             if (moveVectorAsObservable != null)
             {
@@ -67,11 +69,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             if (!m_IsEnable)
             {
-                return;
-            }
-
-            if (IsPlayingAttack())
-            {
                 MoveStop();
                 return;
             }
@@ -87,32 +84,45 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             // 角度分、入力ベクトルを回転させる
             var moveVec = Quaternion.AngleAxis(angle, Vector3.up) * m_InputVec;
 
-            m_Rigidbody.velocity = moveVec * m_Speed;
+            m_MoveParam.SetMoveVector(moveVec * m_Speed);
+            m_MoveParam.SetMoveDirection(moveVec);
 
-            if (moveVec != Vector3.zero)
-            {
-                transform.rotation = Quaternion.LookRotation(moveVec);
-            }
-
-            SetAnimationVelocity(m_InputVec);
+            m_MoveParamAsObservable.OnNext(m_MoveParam);
         }
 
         private void MoveStop()
         {
-            m_Rigidbody.velocity = Vector3.zero;
-        }
+            m_MoveParam.SetMoveVector(Vector3.zero);
+            m_MoveParam.SetMoveDirection(Vector3.zero);
 
-        private void SetAnimationVelocity(Vector2 inputVector)
-        {
-            var velocity = new Vector3(Mathf.Abs(m_InputVec.x), 0f, Mathf.Abs(m_InputVec.z));
-            var inputVelocity = (velocity.x > velocity.z ? velocity.x : velocity.z);
-
-            m_AnimationController.SetMoveVelocity(inputVelocity);
-        }
-
-        private bool IsPlayingAttack()
-        {
-            return (m_ActionState == ActionState.Attack);
+            m_MoveParamAsObservable.OnNext(m_MoveParam);
         }
     }
+
+    #region MoveParameter
+
+    public class MoveParameter
+    {
+        public Vector3 MoveVector { get; private set; }
+
+        public Vector3 MoveDirection { get; private set; }
+
+        public MoveParameter()
+        {
+            MoveVector = Vector3.zero;
+            MoveDirection = Vector3.zero;
+        }
+
+        public void SetMoveVector(Vector3 vector)
+        {
+            MoveVector = vector;
+        }
+
+        public void SetMoveDirection(Vector3 vector)
+        {
+            MoveDirection = vector;
+        }
+    }
+
+    #endregion
 }
