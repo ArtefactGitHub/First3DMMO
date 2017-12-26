@@ -24,6 +24,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         [SerializeField]
         private APlayerController m_Player = null;
 
+        [SerializeField]
+        private PlayerCamera m_PlayerCamera = null;
+
         private void Start()
         {
             for (int i = 0; i < m_SpawnCount; i++)
@@ -52,6 +55,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                     PlayerInputController.Instance.InputButtonManager,
                     WorldUIManager.Instance))
                     .Subscribe().AddTo(this);
+
+                Assert.IsNotNull(m_PlayerCamera);
+                m_PlayerCamera.Initialize();
 
                 m_IsInitialized = true;
             }

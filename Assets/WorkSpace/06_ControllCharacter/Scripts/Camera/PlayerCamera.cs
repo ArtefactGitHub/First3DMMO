@@ -7,26 +7,31 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 {
     [RequireComponent(typeof(Camera))]
     public class PlayerCamera : MonoBehaviour
-	{
-		[SerializeField]
-		//private Transform m_Target = null;
-		private APlayerController m_Target = null;
+    {
+        [SerializeField]
+        private APlayerController m_Target = null;
 
         [SerializeField]
         private Vector3 m_PositionOffset = new Vector3(0f, 5.0f, -15.0f);
 
         [SerializeField]
-		private float m_RotateSpeed = 50.0f;
+        private float m_RotateSpeed = 50.0f;
 
-		[SerializeField]
-		private float m_RollupSpeed = 20.0f;
+        [SerializeField]
+        private float m_RollupSpeed = 20.0f;
+
+        [SerializeField]
+        private float m_MinVerticalAngle = 0.0f;
+
+        [SerializeField]
+        private float m_MaxVerticalAngle = 20.0f;
 
         /// <summary> 入力管理クラス </summary>
         private IPlayerInputStickManager m_Input = null;
 
         private Vector3 m_TargetPositionLast = Vector3.zero;
 
-		private Vector3 m_InputVec = Vector3.zero;
+        private Vector3 m_InputVec = Vector3.zero;
 
         private Camera m_Camera = null;
 
@@ -37,7 +42,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             m_Camera = GetComponent<Camera>();
         }
 
-        private void Start()
+        public void Initialize()
         {
             // 操作管理クラスのインスタンスの取得
             m_Input = PlayerInputController.Instance.InputStickManager;
@@ -45,14 +50,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
             m_TargetPositionLast = m_Target.transform.position;
 
-			// 右（カメラ）スティック入力
-			m_Input.OnInputRightStickAsObservable.Subscribe(inputVec =>
-			{
-				m_InputVec = inputVec;
-			}).AddTo(this);
+            // 右（カメラ）スティック入力
+            m_Input.OnInputRightStickAsObservable.Subscribe(inputVec =>
+            {
+                m_InputVec = inputVec;
+            }).AddTo(this);
 
             (this).UpdateAsObservable().Subscribe(_ =>
-			{
+            {
                 if (IsTargetLock())
                 {
                     LookAtMoveCamera();
@@ -67,7 +72,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             {
                 m_LockObject = lockObject;
             }).AddTo(this);
-		}
+        }
 
         private bool IsTargetLock()
         {
@@ -78,7 +83,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             var direction = (m_LockObject.transform.position - m_TargetPositionLast).normalized;
             var vec = new Vector3(direction.x * m_PositionOffset.z, m_PositionOffset.y, direction.z * m_PositionOffset.z);
-            
+
             //transform.position = m_TargetPositionLast + vec;
             transform.position = Vector3.Lerp(transform.position, (m_TargetPositionLast + vec), 0.5f);
 
@@ -97,7 +102,24 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             transform.RotateAround(m_TargetPositionLast, Vector3.up, m_InputVec.x * (Time.deltaTime * m_RotateSpeed));
 
             // 上下の回転
-            transform.RotateAround(m_TargetPositionLast, transform.right, m_InputVec.y * (Time.deltaTime * m_RollupSpeed));
+            var velocity = m_InputVec.y * (Time.deltaTime * m_RollupSpeed);
+            // 回転角度を制限する
+            if (CanRotateVertical(transform.rotation.eulerAngles.x, velocity, m_MinVerticalAngle, m_MaxVerticalAngle))
+            {
+                transform.RotateAround(m_TargetPositionLast, transform.right, velocity);
+            }
+        }
+
+        private bool CanRotateVertical(float angle, float velocityAngle, float minAngle, float maxAngle)
+        {
+            if (velocityAngle < 0f)
+            {
+                return ((angle + velocityAngle) >= minAngle);
+            }
+            else
+            {
+                return ((angle + velocityAngle) <= maxAngle);
+            }
         }
     }
 }
