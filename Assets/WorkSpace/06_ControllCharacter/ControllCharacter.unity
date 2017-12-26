@@ -483,16 +483,6 @@ Prefab:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
-    - target: {fileID: 224758478749644822, guid: 1f4d8bba5b9ff7f48abcc7e811de90fa,
-        type: 2}
-      propertyPath: m_LocalScale.x
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 224758478749644822, guid: 1f4d8bba5b9ff7f48abcc7e811de90fa,
-        type: 2}
-      propertyPath: m_LocalScale.y
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1f4d8bba5b9ff7f48abcc7e811de90fa, type: 2}
   m_IsPrefabParent: 0
@@ -527,7 +517,7 @@ MonoBehaviour:
   m_RootSpawn: {fileID: 1203510701}
   m_PrefabSpawn: {fileID: 1361223403694394, guid: 42fab918df1d2bc4bb0072368014dfd7,
     type: 2}
-  m_SpawnCount: 50
+  m_SpawnCount: 30
   m_SpawnLeftFar: {x: -90, y: 0, z: 90}
   m_SpawnRightNear: {x: 90, y: 0, z: -90}
   m_Player: {fileID: 805498698}
