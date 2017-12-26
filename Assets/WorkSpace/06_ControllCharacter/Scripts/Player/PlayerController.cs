@@ -20,6 +20,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
     [RequireComponent(typeof(Rigidbody))]
     [RequireComponent(typeof(SearchForTargetable))]
+    [RequireComponent(typeof(Movable))]
     public class PlayerController : APlayerController
     {
         #region property
@@ -33,6 +34,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         [SerializeField]
         private APlayerAnimationController m_AnimationController = null;
 
+        [SerializeField]
+        private Rigidbody m_Rigidbody  = null;
+
         /// <summary> 入力管理クラス </summary>
         private IPlayerInputStickManager m_InputStick = null;
 
@@ -45,9 +49,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private Vector3 m_CalcVec = Vector3.zero;
 
-        private Rigidbody m_Rigidbody { get; set; }
-
         private SearchForTargetable m_SearchForTargetable { get; set; }
+
+        private Movable m_Movable { get; set; }
 
         private bool m_IsLock { get; set; }
 
@@ -60,9 +64,11 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             m_SearchForTargetable = GetComponent<SearchForTargetable>();
             Assert.IsNotNull(m_SearchForTargetable);
 
-            m_Rigidbody = GetComponent<Rigidbody>();
-            Assert.IsNotNull(m_Rigidbody);
+            m_Movable = GetComponent<Movable>();
+            Assert.IsNotNull(m_Movable);
+
             // 回転しないようにする
+            Assert.IsNotNull(m_Rigidbody);
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
         }
 
@@ -93,7 +99,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             // FixedUpdate()
             (this).FixedUpdateAsObservable().Subscribe(_ =>
             {
-                Move();
+                //Move();
             }).AddTo(this);
 
             // アクションボタン入力
@@ -116,9 +122,21 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void InitializeAbility()
         {
+            InitializeMovalbe();
+
             InitializeSearchForTargetable();
 
             InitializeTargetLock();
+        }
+
+        private void InitializeMovalbe()
+        {
+            m_Movable.Initialize(
+                gameObject, 
+                m_Rigidbody, 
+                m_AnimationController, 
+                m_InputStick.OnInputLeftStickAsObservable);
+            m_Movable.Run();
         }
 
         private void InitializeTargetLock()
@@ -207,7 +225,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void Move()
         {
-            if(IsPlayingAttack())
+            if (IsPlayingAttack())
             {
                 MoveStop();
                 return;
