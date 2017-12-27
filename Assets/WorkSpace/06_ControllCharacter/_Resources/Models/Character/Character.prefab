@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 65495445460599336}
   - component: {fileID: 23227641749186200}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -632,6 +632,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b881ff009a7c9a249a36a8b622f8574c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_SearchForTargetablePerFrame: 15
+  m_SearchForTargetableDistance: 50
   m_Speed: 10
   m_DashDistance: 50
   m_DashTimeSecond: 0.3
