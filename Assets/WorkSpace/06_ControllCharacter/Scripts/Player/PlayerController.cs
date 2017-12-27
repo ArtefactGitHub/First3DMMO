@@ -167,7 +167,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             if (actionParameter.ActionType == ActionType.Attack)
             {
-                m_AnimationController.PlayAttack();
+                m_AnimationController.PlayAction(ActionState.Attack);
             }
             else if (actionParameter.ActionType == ActionType.Dash)
             {
@@ -199,6 +199,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 if (param.MoveVector == Vector3.zero)
                 {
                     m_Dashable.Stop();
+
+                    m_AnimationController.StopAction();
                 }
                 else
                 {
@@ -210,7 +212,10 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                     }
                 }
 
-                SetMoveVelocityForAnimation(param.MoveDirection);
+                if (m_ActionState != ActionState.Dash)
+                {
+                    m_AnimationController.PlayAction(ActionState.Dash);
+                }
             }).AddTo(this);
 
             // コンポーネント有効化制御
@@ -249,7 +254,6 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             }).AddTo(this);
 
             // コンポーネント有効化制御
-            //this.ObserveEveryValueChanged(x => x.IsPlayingAttack()).Subscribe(isPlayingAttack =>
             this.ObserveEveryValueChanged(x => x.CanMove()).Subscribe(canMove =>
             {
                 if (canMove) m_Movable.Run();
