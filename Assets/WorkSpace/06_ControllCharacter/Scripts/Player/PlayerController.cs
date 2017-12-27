@@ -28,6 +28,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public override ATargetable LockObject { get { return m_LockObj; } }
 
         [SerializeField]
+        private int m_SearchForTargetablePerFrame = 15;
+
+        [SerializeField]
+        private float m_SearchForTargetableDistance = 50.0f;
+
+        [SerializeField]
         private float m_Speed = 20f;
 
         [SerializeField]
@@ -311,7 +317,9 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         private void InitializeSearchForTargetable()
         {
             // 最近接オブジェクト探索
-            m_SearchForTargetable.Initialize(GameConfig.SearchForTargetablePerFrame);
+            m_SearchForTargetable.Initialize(
+                m_SearchForTargetableDistance,
+                m_SearchForTargetablePerFrame);
             m_SearchForTargetable.Run();
 
             this.ObserveEveryValueChanged(x => x.m_SearchForTargetable.Target)
