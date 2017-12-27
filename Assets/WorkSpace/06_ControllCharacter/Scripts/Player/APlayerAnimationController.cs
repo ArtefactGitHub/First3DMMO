@@ -15,12 +15,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         public abstract void SetMoveVelocity(float velocity);
 
-        public abstract void PlayAttack();
+        public abstract void PlayAction(ActionState state);
+
+        public abstract void StopAction();
     }
 
     public enum ActionState
     {
-        None, Attack
+        None, Attack, Dash
     }
 
     public enum MoveState

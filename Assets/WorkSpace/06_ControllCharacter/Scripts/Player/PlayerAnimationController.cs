@@ -27,29 +27,24 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 .Subscribe(actionState => m_ActionStateAsObservable.OnNext(actionState)).AddTo(this);
         }
 
-        #region Attack
+        #region Action
 
-        public override void PlayAttack()
+        public override void PlayAction(ActionState state)
         {
             if (m_Animator == null)
             {
                 return;
             }
 
-            if (m_ActionState != ActionState.Attack)
-            {
-                m_MoveState = MoveState.Wait;
+            m_MoveState = MoveState.Wait;
 
-                m_ActionState = ActionState.Attack;
-                m_Animator.CrossFadeInFixedTime(m_ActionState.ToString(), 0f);
-            }
+            m_ActionState = state;
+            m_Animator.CrossFadeInFixedTime(m_ActionState.ToString(), 0f);
         }
 
-        public void EndAttack()
+        public override void StopAction()
         {
             m_ActionState = ActionState.None;
-
-            m_Animator.CrossFadeInFixedTime(MoveState.Wait.ToString(), 0f);
         }
 
         #endregion
@@ -60,7 +55,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             if (m_Animator == null)
             {
-                return;                
+                return;
             }
 
             Dictionary<MoveState, float>.KeyCollection keys = m_AnimStateMap.Keys;
