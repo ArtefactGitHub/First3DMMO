@@ -12,17 +12,17 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     {
         public IObservable<MoveParameter> MoveParamAsObservable { get { return m_MoveParamAsObservable.AsObservable(); } }
 
-        private Subject<MoveParameter> m_MoveParamAsObservable = new Subject<MoveParameter>();
+        protected Subject<MoveParameter> m_MoveParamAsObservable = new Subject<MoveParameter>();
 
-        private MoveParameter m_MoveParam = new MoveParameter();
+        protected MoveParameter m_MoveParam = new MoveParameter();
 
-        private float m_Speed = 20f;
+        protected float m_Speed = 20f;
 
-        private Vector3 m_InputVec = Vector3.zero;
+        protected Vector3 m_InputVec = Vector3.zero;
 
-        private Vector3 m_CalcVec = Vector3.zero;
+        protected Vector3 m_CalcVec = Vector3.zero;
 
-        private IDisposable m_Disposable = null;
+        protected IDisposable m_Disposable = null;
 
         public void Initialize(
             GameObject baseObject,
@@ -69,8 +69,19 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 return;
             }
 
+            Vector3 moveDirectionVector = CalcMoveDirectionVector(m_InputVec, Camera.main);
+            UpdateMoveParameter((moveDirectionVector * m_Speed), moveDirectionVector);
+        }
+
+        private void MoveStop()
+        {
+            UpdateMoveParameter(Vector3.zero, Vector3.zero);
+        }
+
+        protected Vector3 CalcMoveDirectionVector(Vector3 inputDirectionVector, Camera camera)
+        {
             // カメラの進行方向ベクトル
-            m_CalcVec.Set(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z);
+            m_CalcVec.Set(camera.transform.forward.x, 0f, camera.transform.forward.z);
             Vector3 cameraForward = m_CalcVec.normalized;
 
             // カメラと前方ベクトルとの角度を求める
@@ -78,18 +89,14 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             float angle = Vector3.Angle(Vector3.forward, cameraForward) * (cameraForward.x < 0f ? -1.0f : 1f);
 
             // 角度分、入力ベクトルを回転させる
-            var moveVec = Quaternion.AngleAxis(angle, Vector3.up) * m_InputVec;
-
-            m_MoveParam.SetMoveVector(moveVec * m_Speed);
-            m_MoveParam.SetMoveDirection(moveVec);
-
-            m_MoveParamAsObservable.OnNext(m_MoveParam);
+            var moveVec = Quaternion.AngleAxis(angle, Vector3.up) * inputDirectionVector;
+            return moveVec;
         }
 
-        private void MoveStop()
+        protected void UpdateMoveParameter(Vector3 moveVec, Vector3 moveDirection)
         {
-            m_MoveParam.SetMoveVector(Vector3.zero);
-            m_MoveParam.SetMoveDirection(Vector3.zero);
+            m_MoveParam.SetMoveVector(moveVec);
+            m_MoveParam.SetMoveDirection(moveDirection);
 
             m_MoveParamAsObservable.OnNext(m_MoveParam);
         }
