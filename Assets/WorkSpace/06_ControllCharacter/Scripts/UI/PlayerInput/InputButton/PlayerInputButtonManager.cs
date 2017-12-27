@@ -27,7 +27,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             get
             {
-                if(m_Instance == null)
+                if (m_Instance == null)
                 {
                     m_Instance = FindObjectOfType<PlayerInputButtonManager>();
                     Assert.IsNotNull(m_Instance);
@@ -72,7 +72,16 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             if (Input.GetMouseButtonDown(1))
             {
+                //m_OnClickActionButton.OnNext(ActionButtonType.Button_1);
+                m_OnClickActionButton.OnNext(ActionButtonType.Button_2);
+            }
+            if (Input.GetKeyUp("1"))
+            {
                 m_OnClickActionButton.OnNext(ActionButtonType.Button_1);
+            }
+            if (Input.GetKeyUp("2"))
+            {
+                m_OnClickActionButton.OnNext(ActionButtonType.Button_2);
             }
         }
 #endif
