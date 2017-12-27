@@ -519,7 +519,7 @@ MonoBehaviour:
   m_RootSpawn: {fileID: 1203510701}
   m_PrefabSpawn: {fileID: 1361223403694394, guid: 42fab918df1d2bc4bb0072368014dfd7,
     type: 2}
-  m_SpawnCount: 30
+  m_SpawnCount: 15
   m_SpawnLeftFar: {x: -90, y: 0, z: 90}
   m_SpawnRightNear: {x: 90, y: 0, z: -90}
   m_Player: {fileID: 805498698}
@@ -2348,22 +2348,6 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 1111f5ecc532ece4facefe31f7f744e3, type: 2}
   m_IsPrefabParent: 0
---- !u!1 &2033375932 stripped
-GameObject:
-  m_PrefabParentObject: {fileID: 1265182186342638, guid: 1111f5ecc532ece4facefe31f7f744e3,
-    type: 2}
-  m_PrefabInternal: {fileID: 2033375930}
---- !u!114 &2033375936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2033375932}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87b29df4191d23f4da78142fdd2728d3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &2088208672
 GameObject:
   m_ObjectHideFlags: 0
