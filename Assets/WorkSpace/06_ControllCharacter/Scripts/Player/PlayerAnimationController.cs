@@ -66,7 +66,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
                 {
                     if (m_MoveState != key)
                     {
-                        m_Animator.CrossFadeInFixedTime(key.ToString(), 0f);
+                        m_Animator.CrossFadeInFixedTime(key.ToString(), 0.2f);
                         m_MoveState = key;
                     }
 
