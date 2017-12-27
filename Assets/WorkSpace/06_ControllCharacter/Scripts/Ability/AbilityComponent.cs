@@ -7,6 +7,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     /// </summary>
     public abstract class AbilityComponent : MonoBehaviour
     {
+        public bool IsEnable { get { return m_IsEnable; } }
+
         protected GameObject m_BaseObject = null;
 
         protected bool m_IsEnable = false;

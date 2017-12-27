@@ -53,6 +53,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             // TODO 仮
             if (actionButtonType == ActionButtonType.Button_1) return ActionType.Attack;
+            else if (actionButtonType == ActionButtonType.Button_2) return ActionType.Dash;
             else return ActionType.Normal;
         }
 
@@ -69,7 +70,7 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
     public enum ActionType
     {
-        Normal, Attack
+        Normal, Attack, Dash
     }
 
     public class ActionParameter

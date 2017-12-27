@@ -30,6 +30,12 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         [SerializeField]
         private float m_Speed = 20f;
 
+        [SerializeField]
+        private float m_DashDistance = 50f;
+
+        [SerializeField]
+        private float m_DashTimeSecond = 0.3f;
+
         /// <summary> アニメーション管理クラス </summary>
         [SerializeField]
         private APlayerAnimationController m_AnimationController = null;
@@ -49,6 +55,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private SearchForTargetable m_SearchForTargetable = null;
 
+        private Dashable m_Dashable = null;
+
         private Movable m_Movable = null;
 
         private Actionable m_Actionable = null;
@@ -59,10 +67,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         #endregion
 
+        #region Awake
+
         private void Awake()
         {
             m_SearchForTargetable = GetComponent<SearchForTargetable>();
             Assert.IsNotNull(m_SearchForTargetable);
+
+            m_Dashable = GetComponent<Dashable>();
+            Assert.IsNotNull(m_Dashable);
 
             m_Movable = GetComponent<Movable>();
             Assert.IsNotNull(m_Movable);
@@ -76,6 +89,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
             Assert.IsNotNull(m_AnimationController);
         }
+
+        #endregion
 
         #region Initialize
 
@@ -115,6 +130,8 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
 
         private void InitializeAbility()
         {
+            InitializeDasable();
+
             InitializeMovable();
 
             InitializeActionable();
@@ -152,6 +169,58 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             {
                 m_AnimationController.PlayAttack();
             }
+            else if (actionParameter.ActionType == ActionType.Dash)
+            {
+                m_Dashable.Play(m_InputVec);
+            }
+        }
+
+        #endregion
+
+        #region Dasable
+
+        private bool IsPlayingDash()
+        {
+            return m_Dashable.IsEnable;
+        }
+
+        private void InitializeDasable()
+        {
+            // 初期化
+            m_Dashable.Initialize(
+                gameObject,
+                m_DashDistance,
+                m_DashTimeSecond,
+                m_InputStick.OnInputLeftStickAsObservable);
+
+            // 移動パラメータのストリーム
+            m_Dashable.MoveParamAsObservable.Subscribe(param =>
+            {
+                if (param.MoveVector == Vector3.zero)
+                {
+                    m_Dashable.Stop();
+                }
+                else
+                {
+                    m_Rigidbody.velocity = param.MoveVector;
+
+                    if (param.MoveDirection != Vector3.zero)
+                    {
+                        transform.rotation = Quaternion.LookRotation(param.MoveDirection);
+                    }
+                }
+
+                SetMoveVelocityForAnimation(param.MoveDirection);
+            }).AddTo(this);
+
+            // コンポーネント有効化制御
+            this.ObserveEveryValueChanged(x => x.IsPlayingAttack()).Subscribe(isPlayingAttack =>
+            {
+                if (isPlayingAttack) m_Dashable.Stop();
+                //else m_Dashable.Run();
+            }).AddTo(this);
+
+            //m_Dashable.Run();
         }
 
         #endregion
@@ -180,13 +249,19 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
             }).AddTo(this);
 
             // コンポーネント有効化制御
-            this.ObserveEveryValueChanged(x => x.IsPlayingAttack()).Subscribe(isPlayingAttack =>
+            //this.ObserveEveryValueChanged(x => x.IsPlayingAttack()).Subscribe(isPlayingAttack =>
+            this.ObserveEveryValueChanged(x => x.CanMove()).Subscribe(canMove =>
             {
-                if (isPlayingAttack) m_Movable.Stop();
-                else m_Movable.Run();
+                if (canMove) m_Movable.Run();
+                else m_Movable.Stop();
             }).AddTo(this);
 
             m_Movable.Run();
+        }
+
+        private bool CanMove()
+        {
+            return (!IsPlayingDash() && !IsPlayingAttack());
         }
 
         private void SetMoveVelocityForAnimation(Vector2 inputVector)

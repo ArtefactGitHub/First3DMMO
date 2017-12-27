@@ -57,13 +57,15 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         public override void Stop()
         {
             m_IsEnable = false;
+
+            MoveStop();
         }
 
         private void Move()
         {
             if (!m_IsEnable)
             {
-                MoveStop();
+                //MoveStop();
                 return;
             }
 
