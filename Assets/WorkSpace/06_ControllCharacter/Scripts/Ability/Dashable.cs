@@ -9,21 +9,17 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
     /// </summary>
     public class Dashable : Movable
     {
-        private float m_Distance = 50.0f;
-
-        private float m_DashTimeSecond = 0.3f;
-
-        private Vector3 m_Direction = Vector3.zero;
+        private CalcDashParameter m_DashParam = new CalcDashParameter();
 
         public void Initialize(
             GameObject baseObject,
-            float distance,
+            float dashDistance,
             float dashTimeSecond,
             IObservable<Vector2> moveVectorAsObservable)
         {
             this.m_BaseObject = baseObject;
-            this.m_Distance = distance;
-            this.m_DashTimeSecond = dashTimeSecond;
+
+            m_DashParam.Initialize(dashDistance, dashTimeSecond);
 
             // FixedUpdate()
             if (m_Disposable != null) m_Disposable.Dispose();
@@ -47,39 +43,35 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         {
             if (direction != Vector3.zero)
             {
-                m_Direction = direction;
+                // カメラ向きを考慮した移動ベクトルの計算
+                m_InputVec = CalcMoveDirectionVector(direction, Camera.main).normalized;
 
-                var moveDirectionVector = CalcMoveDirectionVector(m_Direction, Camera.main);
-                m_InputVec = moveDirectionVector * m_Distance;
-
-                m_Progress = 0f;
-                m_StartTime = Time.time;
+                m_DashParam.Calc(m_BaseObject.transform.position, m_InputVec);
 
                 Run();
             }
         }
 
-        private float m_Progress = 0f;
-        private float m_StartTime = 0f;
-
         private void Move()
         {
-            if (!m_IsEnable || m_Direction == Vector3.zero)
+            if (!m_IsEnable || m_InputVec == Vector3.zero)
             {
                 //MoveStop();
                 return;
             }
 
             var vec = Vector3.zero;
-            if (Time.time < m_StartTime + m_DashTimeSecond)
+            var p = m_DashParam;
+            if (p.IsProgress())
             {
-                m_Progress = (m_DashTimeSecond > 0.0f ? ((Time.time - m_StartTime) / m_DashTimeSecond) : 1.0f);
-                vec = Vector3.Slerp(m_InputVec, Vector3.zero, m_Progress);
+                p.UpdateProgress(p.DashTimeSecond > 0.0f ? ((Time.time - p.StartTime) / p.DashTimeSecond) : 1.0f);
+                vec = Vector3.Lerp(p.MoveVec, Vector3.zero, p.Progress);
             }
             else
             {
                 m_InputVec = Vector3.zero;
-                m_Direction = Vector3.zero;
+
+                m_DashParam.Reset();
             }
 
             m_MoveParam.SetMoveVector(vec);
@@ -96,4 +88,53 @@ namespace com.Artefact.First3DMMO.WorkSpace.ControllCharacter
         //    m_MoveParamAsObservable.OnNext(m_MoveParam);
         //}
     }
+
+    #region CalcDashParameter
+
+    public class CalcDashParameter
+    {
+        public float DashTimeSecond { get; private set; }
+        public float DashDistance { get; private set; }
+        public Vector3 StartVec { get; private set; }
+        public Vector3 MoveVec { get; private set; }
+        public float StartTime { get; private set; }
+        public float Progress { get; private set; }
+
+        public void Initialize(float dashDistance, float dashTimeSecond)
+        {
+            this.DashDistance = dashDistance;
+            this.DashTimeSecond = dashTimeSecond;
+        }
+
+        public void Reset()
+        {
+            Progress = 0f;
+            StartTime = 0f;
+            StartVec = Vector3.zero;
+            MoveVec = Vector3.zero;
+        }
+
+        public bool IsProgress()
+        {
+            return (Time.time < StartTime + DashTimeSecond);
+        }
+
+        public void UpdateProgress(float progress)
+        {
+            this.Progress = progress;
+        }
+
+        public void Calc(Vector3 startVec, Vector3 direction)
+        {
+            this.StartVec = startVec;
+
+            StartTime = Time.time;
+            Progress = 0f;
+
+            MoveVec = direction * DashDistance * (1.0f / DashTimeSecond * 2.0f);
+        }
+
+    }
+
+    #endregion
 }
