@@ -635,8 +635,8 @@ MonoBehaviour:
   m_SearchForTargetablePerFrame: 15
   m_SearchForTargetableDistance: 50
   m_Speed: 10
-  m_DashDistance: 50
-  m_DashTimeSecond: 0.3
+  m_DashDistance: 10
+  m_DashTimeSecond: 0.2
   m_AnimationController: {fileID: 114008792969917836}
   m_Rigidbody: {fileID: 54446710741546882}
 --- !u!114 &114841924979163208
